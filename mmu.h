@@ -225,4 +225,6 @@ struct gatedesc {
   (gate).off_31_16 = (uint)(off) >> 16;                  \
 }
 
+extern volatile char stack[KSTACKSIZE];
+
 #endif

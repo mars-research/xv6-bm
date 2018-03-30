@@ -38,7 +38,8 @@ multiboot_header:
 # Since we haven't set up virtual memory yet, our entry point is
 # the physical address of 'entry'.
 .globl _start
-_start = V2P_WO(entry)
+_start = entry
+
 
 # Entering xv6 on boot processor, with paging off.
 .globl entry
@@ -65,4 +66,3 @@ entry:
   mov $main, %eax
   jmp *%eax
 
-.comm stack, KSTACKSIZE

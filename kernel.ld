@@ -7,11 +7,21 @@ ENTRY(_start)
 
 SECTIONS
 {
+
+	. = 0x100000;
+
+	.boot :
+	{
+		entry.o
+	}
+
+        /* PROVIDE(boot_end = .); */
+ 
 	/* Link the kernel at this address: "." means the current address */
         /* Must be equal to KERNLINK */
-	. = 0x80100000;
+	. = 0x80101000;
 
-	.text : AT(0x100000) {
+	.text : AT(0x101000) {
 		*(.text .stub .text.* .gnu.linkonce.t.*)
 	}
 
@@ -65,4 +75,5 @@ SECTIONS
 	/DISCARD/ : {
 		*(.eh_frame .note.GNU-stack)
 	}
+   /*} */
 }
