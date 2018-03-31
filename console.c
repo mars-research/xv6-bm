@@ -173,6 +173,8 @@ consputc(int c)
 
   if(c == BACKSPACE){
     uartputc('\b'); uartputc(' '); uartputc('\b');
+  } if (c == '\n') {
+    uartputc('\r'); uartputc('\n');
   } else
     uartputc(c);
   cgaputc(c);
