@@ -6,9 +6,7 @@
 #include "proc.h"
 #include "x86.h"
 
-#if !defined(DONT_START_OTHER_CPUS)
 static void startothers(void);
-#endif
 static void mpmain(void)  __attribute__((noreturn));
 extern pde_t *kpgdir;
 extern char end[]; // first address after kernel loaded from ELF file
@@ -35,15 +33,12 @@ main(void)
   binit();         // buffer cache
   fileinit();      // file table
   ideinit();       // disk 
-#if !defined(DONT_START_OTHER_CPUS)
-  startothers();   // start other processors
-#endif
+  //startothers();   // start other processors
   kinit2(P2V(4*1024*1024), P2V(PHYSTOP)); // must come after startothers()
   userinit();      // first user process
   mpmain();        // finish this processor's setup
 }
 
-#if !defined(DONT_START_OTHER_CPUS)
 // Other CPUs jump here from entryother.S.
 static void
 mpenter(void)
@@ -53,7 +48,6 @@ mpenter(void)
   lapicinit();
   mpmain();
 }
-#endif
 
 // Common CPU setup code.
 static void
@@ -68,7 +62,6 @@ mpmain(void)
 
 pde_t entrypgdir[];  // For entry.S
 
-#if !defined(DONT_START_OTHER_CPUS)
 // Start the non-boot (AP) processors.
 static void
 startothers(void)
@@ -103,7 +96,6 @@ startothers(void)
       ;
   }
 }
-#endif
 
 // The boot page table used in entry.S and entryother.S.
 // Page directories (and page tables) must start on page boundaries,
