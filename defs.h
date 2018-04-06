@@ -9,6 +9,7 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
+struct msg;
 
 // bio.c
 void            binit(void);
@@ -112,6 +113,8 @@ struct cpu*     mycpu(void);
 struct proc*    myproc();
 void            pinit(void);
 void            procdump(void);
+int             rcall(int,int, struct msg *);
+int             rdispatch(struct msg *);
 void            scheduler(void) __attribute__((noreturn));
 void            sched(void);
 void            setproc(struct proc*);
@@ -162,6 +165,7 @@ void            timerinit(void);
 // trap.c
 void            idtinit(void);
 extern uint     ticks;
+extern uint     nopreempt;
 void            tvinit(void);
 extern struct spinlock tickslock;
 

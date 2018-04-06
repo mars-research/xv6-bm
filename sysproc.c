@@ -89,3 +89,23 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+int
+sys_rcall(void)
+{
+  int pid, dispatch;
+  struct msg * message;
+  if(argint(0, &pid) < 0||argint(1, &dispatch) < 0||argptr(2,(char**)&message,sizeof(struct msg))<0)
+    return -1;
+  return rcall(pid,dispatch, message);
+
+}
+int
+sys_rdispatch(void)
+{
+
+  struct msg * message;
+  if(argptr(0,(char**)&message,sizeof(struct msg))<0)
+    return -1;
+  return rdispatch(message);
+}

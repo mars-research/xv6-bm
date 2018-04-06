@@ -370,8 +370,9 @@ sched(void)
 
   if(!holding(&ptable.lock))
     panic("sched ptable.lock");
-  if(mycpu()->ncli != 1)
+  if(mycpu()->ncli != 1){
     panic("sched locks");
+  }
   if(p->state == RUNNING)
     panic("sched running");
   if(readeflags()&FL_IF)
@@ -379,6 +380,7 @@ sched(void)
   intena = mycpu()->intena;
   swtch(&p->context, mycpu()->scheduler);
   mycpu()->intena = intena;
+  
 }
 
 // Give up the CPU for one scheduling round.
@@ -504,12 +506,13 @@ void
 procdump(void)
 {
   static char *states[] = {
-  [UNUSED]    "unused",
-  [EMBRYO]    "embryo",
-  [SLEEPING]  "sleep ",
-  [RUNNABLE]  "runble",
-  [RUNNING]   "run   ",
-  [ZOMBIE]    "zombie"
+  [UNUSED]        "unused      ",
+  [EMBRYO]        "embryo      ",
+  [SLEEPING]      "sleep       ",
+  [RUNNABLE]      "runble      ",
+  [RUNNING]       "run         ",
+  [ZOMBIE]        "zombie      ",
+  [IPC_DISPATCH]  "ipc dispatch"
   };
   int i;
   struct proc *p;
@@ -531,4 +534,65 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+struct proc *findproc(int pid)
+{
+  struct proc *p;
+  for (p = ptable.proc; p->pid != pid; p++)
+    continue;
+  return p;
+}
+int rcall(int pid, int dispatch, struct msg *message)
+{
+
+  struct proc *p;
+  struct proc *mine;
+  int intena;
+  nopreempt = 1;
+  if (pid <= 0)
+    return -1;
+  p = findproc(pid);
+  if (p->state != IPC_DISPATCH)
+  {
+    return -2;
+  }
+  mine = myproc();
+  p->mail = *message;
+  p->mail_pid = mine->pid;
+  p->state = RUNNING;
+  mine->state = dispatch ? IPC_DISPATCH : RUNNABLE;
+  pushcli();
+
+  mycpu()->proc = p;
+  intena = mycpu()->intena;
+  switchuvm(p);
+  swtch(&mine->context, p->context);
+
+  if (dispatch)
+  {
+    popcli();
+    *message = mine->mail;
+    nopreempt = 0;
+  }
+
+  else
+  {
+    mycpu()->intena = intena;
+    release(&ptable.lock);
+  }
+  return mine->mail_pid;
+}
+int rdispatch(struct msg *message)
+{
+  //struct cpu * c;
+  // int intena;
+  struct proc *p;
+  p = myproc();
+  p->state = IPC_DISPATCH;
+  acquire(&ptable.lock);
+  sched();
+  popcli();
+  nopreempt = 0;
+  *message = p->mail;
+  return p->mail_pid;
 }

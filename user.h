@@ -1,5 +1,8 @@
 struct stat;
 struct rtcdate;
+struct msg{
+  int regs[16];
+};
 
 // system calls
 int fork(void);
@@ -23,7 +26,8 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-
+int rcall(int, int, struct msg*);
+int rdispatch(struct msg*);
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);
