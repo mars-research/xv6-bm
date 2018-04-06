@@ -16,7 +16,7 @@ int
 main(void)
 {
   int pid, res;
-
+  unsigned long long tv;
   if(open("console", O_RDWR) < 0){
     mknod("console", 1, 1);
     open("console", O_RDWR);
@@ -36,9 +36,10 @@ main(void)
         printf(1,"init: dispatch child process\n");
         struct msg ret;    
         res = rdispatch(&ret);
+        tv = rdtsc();
         //unsigned long long retval = rdtsc() - *((unsigned long long *)&ret);
-        printf(1, "message recieved from parent: %x from pid %d\n",(unsigned int)ret.regs[0], res);
-        ret.regs[0] = 0x1badb002;
+        printf(1, "message recieved from parent: %x cycles taken from pid %d\n",(unsigned int)(tv - *((unsigned long long *)ret.regs)), res);
+        *((unsigned long long*)ret.regs) = rdtsc();
         rcall(res,0, &ret);
       }
       else{
@@ -46,10 +47,11 @@ main(void)
         ret.regs[0] = 0x1badb001;
         sleep(50);
         
-        printf(1, "message sent to child: %x to %d\n", ret.regs[0], pid);
-       // *((unsigned long long *)&ret) = rdtsc();
+        printf(1, "current time sent to child PID %d\n", pid);
+        *((unsigned long long*)&ret.regs) = rdtsc();
         res = rcall(pid,1, &ret);
-        printf(1, "message parent recieved back from child: %x from pid %d\n",*ret.regs, res);
+        tv = rdtsc();
+        printf(1, "message parent recieved back from child: %x cycles taken from pid %d\n",(unsigned int)(tv - *((unsigned long long *)ret.regs)), res);
       }
 
       
