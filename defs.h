@@ -113,8 +113,9 @@ struct cpu*     mycpu(void);
 struct proc*    myproc();
 void            pinit(void);
 void            procdump(void);
-int             rcall(int,int, struct msg *);
-int             rdispatch(struct msg *);
+int             recv(int, struct msg *);
+int             send(int, struct msg *);
+int             send_recv(int, struct msg *);
 void            scheduler(void) __attribute__((noreturn));
 void            sched(void);
 void            setproc(struct proc*);
@@ -191,4 +192,5 @@ int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
 
 // number of elements in fixed-size array
+extern int (*syscalls[25])(void);
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

@@ -11,7 +11,12 @@ struct {
   struct spinlock lock;
   struct proc proc[NPROC];
 } ptable;
-
+struct {
+  struct{
+    struct proc * p;
+    struct msg m __attribute__ ((aligned (16)));
+  } endpoints[NENDS];
+} ipc_endpoints;
 static struct proc *initproc;
 
 int nextpid = 1;
@@ -535,64 +540,160 @@ procdump(void)
     cprintf("\n");
   }
 }
-struct proc *findproc(int pid)
-{
-  struct proc *p;
-  for (p = ptable.proc; p->pid != pid; p++)
-    continue;
-  return p;
-}
-int rcall(int pid, int dispatch, struct msg *message)
+__attribute__((always_inline)) static inline int
+_fetchint(uint addr, int *ip, struct proc * curproc)
 {
 
+  if(addr >= curproc->sz || addr+4 > curproc->sz)
+    return -1;
+  *ip = *(int*)(addr);
+  return 0;
+}
+
+__attribute__((always_inline)) static inline int
+_argint(int n, int *ip, struct proc * curproc) 
+{
+  return _fetchint((curproc->tf->esp) + 4 + 4*n, ip, curproc);
+}
+
+__attribute__((always_inline)) static inline void
+copy_msg(struct msg * m1, struct msg * m2){
+/*for some reason, trap on sse
+  asm("movaps (%0),%%xmm0\n\t"
+      "movntps %%xmm0,(%1) "::"r" (m1),"r"(m2));
+  m1 = (struct msg *)(((char *)m1)+4);
+  m2 = (struct msg *)(((char *)m2)+4);
+  asm("movaps (%0),%%xmm0\n\t"
+      "movntps %%xmm0,(%1) "::"r" (m1),"r"(m2));
+  m1 = (struct msg *)(((char *)m1)+4);
+  m2 = (struct msg *)(((char *)m2)+4);
+  asm("movaps (%0),%%xmm0\n\t"
+      "movntps %%xmm0,(%1) "::"r" (m1),"r"(m2));
+  m1 = (struct msg *)(((char *)m1)+4);
+  m2 = (struct msg *)(((char *)m2)+4);
+  asm("movaps (%0),%%xmm0\n\t"
+      "movntps %%xmm0,(%1) "::"r" (m1),"r"(m2));
+      */
+     *m2 = *m1;   
+}
+__attribute__((always_inline)) static inline int
+_argptr(int n, char **pp, int size, struct proc * curproc)
+{
+  int i;
+ 
+  if(_argint(n, &i, curproc) < 0)
+    return -1;
+  if(size < 0 || (uint)i >= curproc->sz || (uint)i+size > curproc->sz)
+    return -1;
+  *pp = (char*)i;
+  return 0;
+}
+__attribute__((always_inline))
+static inline void _pushcli(){
+  nopreempt = 1;
+}
+__attribute__((always_inline))
+static inline void _popcli(){
+  nopreempt = 0;
+}
+int
+sys_send_recv(void)
+{
+  //cprintf("HELLO FROM SEND_RECV\n");
+  int endp;
+  struct msg * message;
   struct proc *p;
   struct proc *mine;
-  int intena;
-  nopreempt = 1;
-  if (pid <= 0)
+  struct cpu  *c;
+  _pushcli();
+  c = &cpus[0];
+  mine = c->proc;
+  if(_argint(0, &endp, mine) < 0||_argptr(1,(char**)&message,sizeof(struct msg), mine)<0){
+    _popcli();
     return -1;
-  p = findproc(pid);
-  if (p->state != IPC_DISPATCH)
+  }
+    
+  
+  p = ipc_endpoints.endpoints[endp].p;
+  if (p!=0?p->state!=IPC_DISPATCH:1)
   {
+    _popcli();
     return -2;
   }
-  mine = myproc();
-  p->mail = *message;
-  p->mail_pid = mine->pid;
+  copy_msg(message,&ipc_endpoints.endpoints[endp].m);
   p->state = RUNNING;
-  mine->state = dispatch ? IPC_DISPATCH : RUNNABLE;
-  pushcli();
-
-  mycpu()->proc = p;
-  intena = mycpu()->intena;
-  switchuvm(p);
+  mine->state =IPC_DISPATCH;
+  ipc_endpoints.endpoints[endp].p = mine;
+  c->proc = p;
+  c->gdt[SEG_TSS] = SEG16(STS_T32A, &c->ts,
+                                sizeof(c->ts)-1, 0);
+  c->gdt[SEG_TSS].s = 0;
+  c->ts.ss0 = SEG_KDATA << 3;
+  c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
+  c->ts.iomb = (ushort) 0xFFFF;
+  ltr(SEG_TSS << 3);
+  lcr3(V2P(p->pgdir));
   swtch(&mine->context, p->context);
-
-  if (dispatch)
-  {
-    popcli();
-    *message = mine->mail;
-    nopreempt = 0;
-  }
-
-  else
-  {
-    mycpu()->intena = intena;
-    release(&ptable.lock);
-  }
-  return mine->mail_pid;
+  _popcli();
+  copy_msg(&ipc_endpoints.endpoints[endp].m, message);
+  //nopreempt = 0;
+  return 1;
 }
-int rdispatch(struct msg *message)
+int
+sys_send(void)
 {
-  //struct cpu * c;
-  // int intena;
+  //cprintf("HELLO FROM SEND_RECV\n");
+  int endp;
+  struct msg * message;
   struct proc *p;
-  p = myproc();
+  struct proc *mine;
+  struct cpu  *c;
+  _pushcli();
+  c = &cpus[0];
+  mine = c->proc;
+  if(_argint(0, &endp, mine) < 0||_argptr(1,(char**)&message,sizeof(struct msg), mine)<0){
+    _popcli();
+    return -1;
+  }
+  
+  p = ipc_endpoints.endpoints[endp].p;
+  if (p!=0?p->state!=IPC_DISPATCH:1)
+  {
+    _popcli();
+    return -2;
+  }
+  //nopreempt = 1;
+  
+  
+  copy_msg(message,&ipc_endpoints.endpoints[endp].m);
+  p->state = RUNNING;
+  mine->state =RUNNABLE;
+  ipc_endpoints.endpoints[endp].p = 0;
+  c->proc = p;
+  c->gdt[SEG_TSS] = SEG16(STS_T32A, &c->ts,
+                                sizeof(c->ts)-1, 0);
+  c->gdt[SEG_TSS].s = 0;
+  c->ts.ss0 = SEG_KDATA << 3;
+  c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
+  c->ts.iomb = (ushort) 0xFFFF;
+  ltr(SEG_TSS << 3);
+  lcr3(V2P(p->pgdir));
+  swtch(&mine->context, p->context);
+  release(&ptable.lock);
+  return 1;
+}
+
+int recv(int endp, struct msg *message)
+{
+  struct proc *p;
+  if(ipc_endpoints.endpoints[endp].p!=0)
+    return -1;
+  
+  ipc_endpoints.endpoints[endp].p = (p = myproc());
   p->state = IPC_DISPATCH;
   acquire(&ptable.lock);
-  sched();
-  popcli();
-  nopreempt = 0;
-  *message = p->mail;
-  return p->mail_pid;
+  swtch(&p->context, mycpu()->scheduler);
+  _popcli();
+  copy_msg(&ipc_endpoints.endpoints[endp].m, message);
+  return 1;
 }

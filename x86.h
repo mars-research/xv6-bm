@@ -17,7 +17,10 @@ insl(int port, void *addr, int cnt)
                "d" (port), "0" (addr), "1" (cnt) :
                "memory", "cc");
 }
-
+static inline void rdtsc(unsigned long long * tsc)
+{
+    asm volatile ("rdtsc" : "=A" (*tsc));
+}
 static inline void
 outb(ushort port, uchar data)
 {
@@ -128,6 +131,34 @@ xchg(volatile uint *addr, uint newval)
                "1" (newval) :
                "cc");
   return result;
+}
+
+static inline uint
+rcr0(void)
+{
+  uint val;
+  asm volatile("movl %%cr0,%0" : "=r" (val));
+  return val;
+}
+
+static inline void
+lcr0(uint val)
+{
+  asm volatile("movl %0,%%cr0" : : "r" (val));
+}
+
+static inline uint
+rcr4(void)
+{
+  uint val;
+  asm volatile("movl %%cr4,%0" : "=r" (val));
+  return val;
+}
+
+static inline void
+lcr4(uint val)
+{
+  asm volatile("movl %0,%%cr4" : : "r" (val));
 }
 
 static inline uint

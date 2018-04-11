@@ -33,22 +33,41 @@ idtinit(void)
 }
 
 //PAGEBREAK: 41
-void
-trap(struct trapframe *tf)
+void trap(struct trapframe *tf)
 {
-  if(tf->trapno == T_SYSCALL){
-    if(myproc()->killed)
+  int num;
+
+  if (tf->trapno == T_SYSCALL)
+  {
+    if (cpus[0].proc->killed)
+    {
       exit();
-    myproc()->tf = tf;
-    syscall();
-    if(myproc()->killed)
+    }
+    cpus[0].proc->tf = tf;
+    num = tf->eax;
+    if (num > 0 && num < NELEM(syscalls) && syscalls[num])
+    {
+      tf->eax = syscalls[num]();
+    }
+    else
+    {
+      cprintf("%d %s: unknown sys call %d\n",
+              cpus[0].proc->pid, cpus[0].proc->name, num);
+      tf->eax = -1;
+    }
+    if (cpus[0].proc->killed)
+    {
       exit();
+    }
+
     return;
   }
 
-  switch(tf->trapno){
+  switch (tf->trapno)
+  {
   case T_IRQ0 + IRQ_TIMER:
-    if(cpuid() == 0){
+    if (cpuid() == 0)
+    {
       acquire(&tickslock);
       ticks++;
       wakeup(&ticks);
@@ -60,7 +79,7 @@ trap(struct trapframe *tf)
     ideintr();
     lapiceoi();
     break;
-  case T_IRQ0 + IRQ_IDE+1:
+  case T_IRQ0 + IRQ_IDE + 1:
     // Bochs generates spurious IDE1 interrupts.
     break;
   case T_IRQ0 + IRQ_KBD:
@@ -80,7 +99,8 @@ trap(struct trapframe *tf)
 
   //PAGEBREAK: 13
   default:
-    if(myproc() == 0 || (tf->cs&3) == 0){
+    if (myproc() == 0 || (tf->cs & 3) == 0)
+    {
       // In kernel, it must be our mistake.
       cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
               tf->trapno, cpuid(), tf->eip, rcr2());
@@ -97,16 +117,16 @@ trap(struct trapframe *tf)
   // Force process exit if it has been killed and is in user space.
   // (If it is still executing in the kernel, let it keep running
   // until it gets to the regular system call return.)
-  if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
+  if (myproc() && myproc()->killed && (tf->cs & 3) == DPL_USER)
     exit();
 
   // Force process to give up CPU on clock tick.
   // If interrupts were on while locks held, would need to check nlock.
-  if(!nopreempt && myproc() && myproc()->state == RUNNING &&
-     tf->trapno == T_IRQ0+IRQ_TIMER)
+  if (!nopreempt && myproc() && myproc()->state == RUNNING &&
+      tf->trapno == T_IRQ0 + IRQ_TIMER)
     yield();
 
   // Check if the process has been killed since we yielded
-  if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
+  if (myproc() && myproc()->killed && (tf->cs & 3) == DPL_USER)
     exit();
 }

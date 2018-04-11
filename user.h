@@ -26,8 +26,9 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
-int rcall(int, int, struct msg*);
-int rdispatch(struct msg*);
+int recv(int, struct msg*);
+int send(int,struct msg*);
+int send_recv(int,struct msg*);
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);

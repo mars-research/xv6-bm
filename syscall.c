@@ -103,10 +103,11 @@ extern int sys_unlink(void);
 extern int sys_wait(void);
 extern int sys_write(void);
 extern int sys_uptime(void);
-extern int sys_rcall(void);
-extern int sys_rdispatch(void);
+extern int sys_recv(void);
+extern int sys_send_recv(void);
+extern int sys_send(void);
 
-static int (*syscalls[])(void) = {
+int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
 [SYS_exit]    sys_exit,
 [SYS_wait]    sys_wait,
@@ -128,15 +129,17 @@ static int (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
-[SYS_rcall]   sys_rcall,
-[SYS_rdispatch]   sys_rdispatch,
+[SYS_recv]   sys_recv,
+
+[SYS_send]   sys_send,
+[SYS_send_recv]   sys_send_recv,
 };
 
 void
 syscall(void)
 {
   int num;
-  struct proc *curproc = myproc();
+  struct proc *curproc = cpus[0].proc;
 
   num = curproc->tf->eax;
   if(num > 0 && num < NELEM(syscalls) && syscalls[num]) {

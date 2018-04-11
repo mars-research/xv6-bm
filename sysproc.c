@@ -91,21 +91,13 @@ sys_uptime(void)
 }
 
 int
-sys_rcall(void)
+sys_recv(void)
 {
-  int pid, dispatch;
+  //cprintf("HELLO FROM RECV\n");
+  int endp;
   struct msg * message;
-  if(argint(0, &pid) < 0||argint(1, &dispatch) < 0||argptr(2,(char**)&message,sizeof(struct msg))<0)
+  if(argint(0, &endp) < 0||argptr(1,(char**)&message,sizeof(struct msg))<0)
     return -1;
-  return rcall(pid,dispatch, message);
+  return recv(endp, message);
 
-}
-int
-sys_rdispatch(void)
-{
-
-  struct msg * message;
-  if(argptr(0,(char**)&message,sizeof(struct msg))<0)
-    return -1;
-  return rdispatch(message);
 }
