@@ -32,6 +32,18 @@ idtinit(void)
   lidt(idt, sizeof(idt));
 }
 
+void dump_state(struct trapframe *tf) {
+  cprintf("eax: %x, ebx: %x, ecx: %x, edx: %x\n",
+          tf->eax, tf->ebx, tf->ecx, tf->edx);
+  cprintf("esp: %x, ebp: %x, esi: %x, edi: %x\n",
+          tf->esp, tf->ebp, tf->esi, tf->edi);
+  cprintf("gs: %x, fs: %x, es: %x, ds: %x, ss: %x\n",
+          tf->gs, tf->fs, tf->es, tf->ds, tf->ss);
+  cprintf("err: %x, eip: %x, cs: %x, esp: %x, eflags: %x\n",
+          tf->err, tf->eip, tf->cs, tf->esp, tf->eflags);
+  return;
+};
+
 //PAGEBREAK: 41
 void
 trap(struct trapframe *tf)
@@ -84,6 +96,7 @@ trap(struct trapframe *tf)
       // In kernel, it must be our mistake.
       cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
               tf->trapno, cpuid(), tf->eip, rcr2());
+      dump_state(tf);
       panic("trap");
     }
     // In user space, assume process misbehaved.
