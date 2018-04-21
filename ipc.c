@@ -7,7 +7,9 @@
 
 typedef unsigned int uint32_t; 
 typedef  unsigned long long uint64_t;
+#define ITERS 1000000
 
+/*
 uint32_t UInt64DivAndGetMod(uint64_t *a, uint32_t b) {
   uint32_t upper = ((uint32_t*)a)[1], r;
   ((uint32_t*)a)[1] = 0;
@@ -19,89 +21,75 @@ uint32_t UInt64DivAndGetMod(uint64_t *a, uint32_t b) {
       "rm" (b), "0" (((uint32_t*)a)[0]), "1" (upper));
   return r;
 }
+*/
 
 char *argv[] = { "sh", 0 };
-#define ITERS 1000000
 static __inline__ unsigned long long rdtsc(void)
 {
     unsigned long long int x;
     __asm__ volatile ("rdtsc" : "=A" (x));
     return x;
 }
-int
+
 #define diff(x, i1) *((unsigned long long *)&ret.regs[i1*2+2]) - *((unsigned long long *)&ret.regs[i1*2])
+
+void client() {
+  unsigned long i; 
+  unsigned long long start, end; 
+  struct msg ret __attribute__ ((aligned (64)));
+
+  recv(0,&ret);
+        
+  start = rdtsc();
+  for(i = 0; i < ITERS - 1; i++){
+    send_recv(0, &ret);
+  }
+
+  end = rdtsc();
+        
+  send(0, &ret);
+  printf(1, "ipc: client(): average cycles across %d runs: %llu (total:%llu)\n",
+        (unsigned long)(end - start)/ITERS, ITERS, end - start);
+  return;
+}
+
+void server(void){
+  unsigned long i; 
+  unsigned long long start, end; 
+  struct msg ret __attribute__ ((aligned (64)));
+
+  start = rdtsc();
+
+  for(i = 0; i < ITERS; i++){
+    send_recv(0, &ret);
+  }
+        
+  end = rdtsc(); 
+        
+  printf(1, "ipc: server(): average cycles across %d runs: %llu (total:%llu)\n",
+          (unsigned long)(end - start)/ITERS, ITERS, end - start);
+}
+
+int
 main(void)
 {
   int pid;
-  unsigned long long tv __attribute__((unused));
-  unsigned long long sum;
-
-  sum = 0;
-  int num;
-    printf(1, "ipc: starting test\n");
-    pid = fork();
-    if(pid<0){
-      printf(1,"ipc: cannot fork\n");
-      for(;;);
-    }
-    else{
-      if(pid == 0){
-        printf(1,"ipc: dispatch child process\n");
-        struct msg ret __attribute__ ((aligned (64)));  
-        
-        recv(0,&ret);
-        //unsigned long long retval = rdtsc() - *((unsigned long long *)&ret);
-        for(num = 0;num<ITERS-1;num++){
-        //*((unsigned long long *)&ret.regs[12]) = rdtsc();
-        tv = rdtsc();
-        send_recv(0, &ret);
-        sum+=rdtsc()-tv;
-       /* sum0+=diff(x, 0);
-        sum1+=diff(x, 1);
-        sum2+=diff(x, 2);
-        sum3+=diff(x, 3);
-        sum4+=diff(x, 4);
-        sum5+= *((unsigned long long *)&ret.regs[0]) - *((unsigned long long *)&ret.regs[12]);
-        sum6+=rdtsc() - *((unsigned long long *)&ret.regs[10]);*/
-
-
-        //sum+=*((unsigned long long*)&ret.regs);
-        }
-
-        
-        UInt64DivAndGetMod(&sum, ITERS-1);
-
-        printf(1, "ipc: message recieved from parent: %d cycles taken\n",(uint)(sum));
-        *((unsigned long long*)ret.regs) =  rdtsc();  
-        send(0, &ret);
-      }
-      else{
-        struct msg ret __attribute__ ((aligned (64)));
-        sleep(50);
-        
-        
-        for(num = 0;num<ITERS;num++){
-          tv = rdtsc();
-         // *((unsigned long long *)&ret.regs[12]) = rdtsc();
-         send_recv(0, &ret);
-         sum += rdtsc() - tv;
-        /*sum0+=diff(x, 0);
-        sum1+=diff(x, 1);
-        sum2+=diff(x, 2);
-        sum3+=diff(x, 3);
-        sum4+=diff(x, 4);
-        sum5+= *((unsigned long long *)&ret.regs[0]) - *((unsigned long long *)&ret.regs[12]);
-        sum6+=rdtsc() - *((unsigned long long *)&ret.regs[10]);*/
-        //sum+=*((unsigned long long*)&ret.regs);
-        }
-        
-        UInt64DivAndGetMod(&sum, ITERS);
- 
-        printf(1, "ipc: message parent recieved back from child: %d cycles taken\n",(uint)(sum));
-      }
-
-      
+  printf(1, "ipc: starting test\n");
+  
+  pid = fork();
+  if(pid < 0){
+    printf(1,"ipc: cannot fork\n");
+    for(;;);
   }
+
+  if(pid == 0){
+    printf(1,"ipc: starting client\n");
+    client(); 
+  } else {
+    printf(1,"ipc: starting server\n");	  
+    sleep(50);
+    server();      
+  };
 
   return 0;
 }
