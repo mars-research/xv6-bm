@@ -14,6 +14,9 @@ extern uint vectors[];  // in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
 uint ticks;
 
+void dump_state(struct trapframe *tf);
+void dump(); 
+
 void
 tvinit(void)
 {
@@ -41,6 +44,12 @@ void dump_state(struct trapframe *tf) {
           tf->gs, tf->fs, tf->es, tf->ds, tf->ss);
   cprintf("err: %x, eip: %x, cs: %x, esp: %x, eflags: %x\n",
           tf->err, tf->eip, tf->cs, tf->esp, tf->eflags);
+  return;
+};
+
+void dump() {
+  cprintf("state of the current process\n");
+  dump_state(mycpu()->proc->tf); 
   return;
 };
 
