@@ -4,8 +4,10 @@
 #include "stat.h"
 #include "user.h"
 #include "fcntl.h"
-#define uint32_t unsigned int
-#define uint64_t unsigned long long
+
+typedef unsigned int uint32_t; 
+typedef  unsigned long long uint64_t;
+
 uint32_t UInt64DivAndGetMod(uint64_t *a, uint32_t b) {
   uint32_t upper = ((uint32_t*)a)[1], r;
   ((uint32_t*)a)[1] = 0;
@@ -100,4 +102,6 @@ main(void)
 
       
   }
+
+  return 0;
 }
