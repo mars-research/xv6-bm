@@ -624,7 +624,17 @@ sys_send_recv(void)
   mine->state =IPC_DISPATCH;
   ipc_endpoints.endpoints[endp].p = mine;
   c->proc = p;
+<<<<<<< HEAD
   c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
+=======
+  c->gdt[SEG_TSS] = SEG16(STS_T32A, &c->ts,
+                                sizeof(c->ts)-1, 0);
+  //c->gdt[SEG_TSS].s = 0;
+  //c->ts.ss0 = SEG_KDATA << 3;
+  c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
+  //c->ts.iomb = (ushort) 0xFFFF;
+  ltr(SEG_TSS << 3);
+>>>>>>> 60cc90c0a3768e0bac948d8f3e3dc1dadb8fbff0
   lcr3(V2P(p->pgdir));
   swtch(&mine->context, p->context);
   _popcli();
