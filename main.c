@@ -29,11 +29,13 @@ void sysenter_dispatch( uint stack, uint num){
   struct trapframe *tf = cpus[0].proc->tf;
   
   tf->esp = stack;
-  if (num < NELEM(syscalls) && syscalls[num])
-    tf->eax = syscalls[num]();
-  else
+  if (num >= NELEM(syscalls) || !syscalls[num]) {
     /* Invalid syscall number */	  
     tf->eax = -2;
+    return;
+  };
+
+  tf->eax = syscalls[num]();
   return; 
 }
 
