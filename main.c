@@ -29,22 +29,11 @@ int sysenter_dispatch( uint stack, uint num){
   struct trapframe *tf = cpus[0].proc->tf;
   
   tf->esp = stack;
-<<<<<<< HEAD
   if (num < NELEM(syscalls) && syscalls[num])
     return syscalls[num]();
   else
     /* Invalid syscall number */	  
     return -2; 
-=======
-  if (num >= NELEM(syscalls) || !syscalls[num]) {
-    /* Invalid syscall number */	  
-    tf->eax = -2;
-    return;
-  };
-
-  tf->eax = syscalls[num]();
-  return; 
->>>>>>> refs/remotes/origin/IPC
 }
 
 // Bootstrap processor starts running C code here.
