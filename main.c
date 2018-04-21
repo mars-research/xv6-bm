@@ -25,9 +25,16 @@ void sysenterinit(){
   wrmsr(0x175,0, 0);
   wrmsr(0x176,(uint)syscall_entry, 0);
 }
-void sysenter_dispatch( uint ecx,uint eax){
-  cpus->proc->tf->esp = ecx;
-  syscalls[eax]();
+void sysenter_dispatch( uint stack, uint num){
+  struct trapframe *tf = cpus[0].proc->tf;
+  
+  tf->esp = stack;
+  if (num < NELEM(syscalls) && syscalls[num])
+    tf->eax = syscalls[num]();
+  else
+    /* Invalid syscall number */	  
+    tf->eax = -2;
+  return; 
 }
 
 // Bootstrap processor starts running C code here.
