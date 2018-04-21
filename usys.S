@@ -10,11 +10,9 @@
 #define SYSCALL_FAST(name) \
   .globl name;  \
   name: \
-  .intel_syntax noprefix; \
-  mov eax, SYS_ ## name; \
-  mov ecx, esp; \
-  sysenter; \
-  .att_syntax 
+  movl $SYS_ ## name, %eax; \
+  movl %esp, %ecx; \
+  sysenter
 SYSCALL(fork)
 SYSCALL(exit)
 SYSCALL(wait)
