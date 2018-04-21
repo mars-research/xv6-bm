@@ -660,11 +660,7 @@ sys_send(void)
   mine->state =RUNNABLE;
   ipc_endpoints.endpoints[endp].p = 0;
   c->proc = p;
-  c->gdt[SEG_TSS] = SEG16(STS_T32A, &c->ts,
-                                sizeof(c->ts)-1, 0);
-  c->gdt[SEG_TSS].s = 0;
   c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
-  ltr(SEG_TSS << 3);
   lcr3(V2P(p->pgdir));
   swtch(&mine->context, p->context);
   release(&ptable.lock);
