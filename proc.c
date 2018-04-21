@@ -590,16 +590,15 @@ _argptr(int n, char **pp, int size, struct proc * curproc)
 }
 __attribute__((always_inline))
 static inline void _pushcli(){
-  nopreempt = 1;
+ // nopreempt = 1;
 }
 __attribute__((always_inline))
 static inline void _popcli(){
-  nopreempt = 0;
+  //nopreempt = 0;
 }
 int
 sys_send_recv(void)
 {
-  //cprintf("HELLO FROM SEND_RECV\n");
   int endp;
   struct msg * message;
   struct proc *p;
@@ -608,14 +607,14 @@ sys_send_recv(void)
   _pushcli();
   c = &cpus[0];
   mine = c->proc;
-  if(_argint(0, &endp, mine) < 0||_argptr(1,(char**)&message,sizeof(struct msg), mine)<0){
+  if(__builtin_expect(_argint(0, &endp, mine) < 0||_argptr(1,(char**)&message,sizeof(struct msg), mine)<0, 0)){
     _popcli();
     return -1;
   }
     
   
   p = ipc_endpoints.endpoints[endp].p;
-  if (p!=0?p->state!=IPC_DISPATCH:1)
+  if (__builtin_expect(p!=0?p->state!=IPC_DISPATCH:1, 0))
   {
     _popcli();
     return -2;
@@ -625,24 +624,16 @@ sys_send_recv(void)
   mine->state =IPC_DISPATCH;
   ipc_endpoints.endpoints[endp].p = mine;
   c->proc = p;
-  c->gdt[SEG_TSS] = SEG16(STS_T32A, &c->ts,
-                                sizeof(c->ts)-1, 0);
-  c->gdt[SEG_TSS].s = 0;
-  c->ts.ss0 = SEG_KDATA << 3;
   c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
-  c->ts.iomb = (ushort) 0xFFFF;
-  ltr(SEG_TSS << 3);
   lcr3(V2P(p->pgdir));
   swtch(&mine->context, p->context);
   _popcli();
   copy_msg(&ipc_endpoints.endpoints[endp].m, message);
-  //nopreempt = 0;
   return 1;
 }
 int
 sys_send(void)
 {
-  //cprintf("HELLO FROM SEND_RECV\n");
   int endp;
   struct msg * message;
   struct proc *p;
@@ -662,7 +653,6 @@ sys_send(void)
     _popcli();
     return -2;
   }
-  //nopreempt = 1;
   
   
   copy_msg(message,&ipc_endpoints.endpoints[endp].m);
@@ -673,9 +663,7 @@ sys_send(void)
   c->gdt[SEG_TSS] = SEG16(STS_T32A, &c->ts,
                                 sizeof(c->ts)-1, 0);
   c->gdt[SEG_TSS].s = 0;
-  c->ts.ss0 = SEG_KDATA << 3;
   c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
-  c->ts.iomb = (ushort) 0xFFFF;
   ltr(SEG_TSS << 3);
   lcr3(V2P(p->pgdir));
   swtch(&mine->context, p->context);

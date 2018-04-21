@@ -5,12 +5,11 @@
 #include "mmu.h"
 #include "proc.h"
 #include "x86.h"
-
+extern void syscall_entry();
 __attribute__((unused)) static void startothers(void);
 static void mpmain(void)  __attribute__((noreturn));
 extern pde_t *kpgdir;
 extern char end[]; // first address after kernel loaded from ELF file
-
 volatile char stack[KSTACKSIZE];
 void sseinit(){
   uint x = rcr0();
@@ -21,6 +20,16 @@ void sseinit(){
   x|=(3<<9);
   lcr4(x);
 }
+void sysenterinit(){
+  wrmsr(0x174,SEG_KCODE<<3, 0);
+  wrmsr(0x175,0, 0);
+  wrmsr(0x176,(uint)syscall_entry, 0);
+}
+void sysenter_dispatch( uint ecx,uint eax){
+  cpus->proc->tf->esp = ecx;
+  syscalls[eax]();
+}
+
 // Bootstrap processor starts running C code here.
 // Allocate a real stack and switch to it, first
 // doing some setup required for memory allocator to work.
@@ -39,13 +48,16 @@ main(void)
   uartinit();      // serial port
   pinit();         // process table
   tvinit();        // trap vectors
+  sysenterinit();
   binit();         // buffer cache
   fileinit();      // file table
   ideinit();       // disk 
   //startothers();   // start other processors
   kinit2(P2V(4*1024*1024), P2V(PHYSTOP)); // must come after startothers()
+  
   userinit();      // first user process
   mpmain();        // finish this processor's setup
+  
 }
 
 // Other CPUs jump here from entryother.S.

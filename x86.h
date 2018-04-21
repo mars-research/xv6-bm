@@ -174,7 +174,15 @@ lcr3(uint val)
 {
   asm volatile("movl %0,%%cr3" : : "r" (val));
 }
-
+static inline void rdmsr(uint msr, uint *lo, uint *hi)
+{
+   asm volatile("rdmsr" : "=a"(*lo), "=d"(*hi) : "c"(msr));
+}
+ 
+static inline void wrmsr(uint msr, uint lo, uint hi)
+{
+   asm volatile("wrmsr" : : "a"(lo), "d"(hi), "c"(msr));
+}
 //PAGEBREAK: 36
 // Layout of the trap frame built on the stack by the
 // hardware and by trapasm.S, and passed to trap().

@@ -7,7 +7,14 @@
     movl $SYS_ ## name, %eax; \
     int $T_SYSCALL; \
     ret
-
+#define SYSCALL_FAST(name) \
+  .globl name;  \
+  name: \
+  .intel_syntax noprefix; \
+  mov eax, SYS_ ## name; \
+  mov ecx, esp; \
+  sysenter; \
+  .att_syntax 
 SYSCALL(fork)
 SYSCALL(exit)
 SYSCALL(wait)
@@ -29,6 +36,6 @@ SYSCALL(getpid)
 SYSCALL(sbrk)
 SYSCALL(sleep)
 SYSCALL(uptime)
-SYSCALL(recv)
-SYSCALL(send)
-SYSCALL(send_recv)
+SYSCALL_FAST(recv)
+SYSCALL_FAST(send)
+SYSCALL_FAST(send_recv)
