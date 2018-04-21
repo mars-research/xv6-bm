@@ -91,5 +91,5 @@ main(void)
     server();      
   };
 
-  return 0;
+  exit();
 }
