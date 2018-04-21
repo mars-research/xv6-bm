@@ -8,6 +8,7 @@
 .global sys_send_recv
 .extern syscalls
 .extern sysenter_dispatch
+
 .intel_syntax noprefix
 # sys_send_recv_:
 # mov eax, [0xac+cpus]
@@ -17,19 +18,20 @@
 # jmp sys_send_recv_o
 
 syscall_entry:
-mov  esp,[0xac+cpus]
-mov esp, [0x08+esp]
-add esp,KSTACKSIZE
-push eax
-push ecx
-call sysenter_dispatch
-pop ecx
-mov edx, [ecx]
-add ecx, 4
-sti
-sysexit
+  mov  esp,[0xac+cpus]
+  mov esp, [0x08+esp]
+  add esp,KSTACKSIZE
+  push eax
+  push ecx
+  call sysenter_dispatch
+  pop ecx
+  mov edx, [ecx]
+  add ecx, 4
+  sti
+  sysexit
 .att_syntax
-  # vectors.S sends all traps here.
+
+# vectors.S sends all traps here.
 .globl alltraps
 alltraps:
   # Build trap frame.
