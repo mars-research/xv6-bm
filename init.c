@@ -28,7 +28,7 @@ main(void)
     }
     if(pid == 0){
       exec("ipc", argv);
-      printf(1, "init: exec sh failed\n");
+      printf(1, "init: ipc done\n");
       exit();
     }
     while((wpid=wait()) >= 0 && wpid != pid)
