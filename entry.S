@@ -55,9 +55,21 @@ entry:
   movl    %cr0, %eax
   orl     $(CR0_PG|CR0_WP), %eax
   movl    %eax, %cr0
+  
+  ljmp    $(SEG_KCODE<<3), $bmstart32
 
+bmstart32:  
   # Set up the stack pointer.
   movl $(stack + KSTACKSIZE), %esp
+
+  # Set up the protected-mode data segment registers
+  movw    $(SEG_KDATA<<3), %ax    # Our data segment selector
+  movw    %ax, %ds                # -> DS: Data Segment
+  movw    %ax, %es                # -> ES: Extra Segment
+  movw    %ax, %ss                # -> SS: Stack Segment
+  movw    $0, %ax                 # Zero segments not ready for use
+  movw    %ax, %fs                # -> FS
+  movw    %ax, %gs                # -> GS
 
   # Jump to main(), and switch to executing at
   # high addresses. The indirect call is needed because
@@ -65,4 +77,16 @@ entry:
   # for a direct jump.
   mov $main, %eax
   jmp *%eax
+
+# Bare-metal ootstrap GDT
+.p2align 2                                # force 4 byte alignment
+bmgdt:
+  SEG_NULLASM                             # null seg
+  SEG_ASM(STA_X|STA_R, 0x0, 0xffffffff)   # code seg
+  SEG_ASM(STA_W, 0x0, 0xffffffff)         # data seg
+
+bmgdtdesc:
+  .word   (bmgdtdesc - bmgdt - 1)         # sizeof(gdt) - 1
+  .long   bmgdt                           # address gdt
+
 
