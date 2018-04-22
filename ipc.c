@@ -48,6 +48,8 @@ void client() {
   end = rdtsc();
         
   send(0, &ret);
+  printf(1, "ipc: client(): end %d, start: %d\n",
+         end, start);
   printf(1, "ipc: client(): average cycles across %d runs: %d\n",
         ITERS, (unsigned long)(end - start)/ITERS);
   return;
