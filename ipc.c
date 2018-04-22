@@ -7,7 +7,7 @@
 
 typedef unsigned int uint32_t; 
 typedef  unsigned long long uint64_t;
-#define ITERS 1000000
+#define ITERS 1000
 
 /*
 uint32_t UInt64DivAndGetMod(uint64_t *a, uint32_t b) {
@@ -48,6 +48,8 @@ void client() {
   end = rdtsc();
         
   send(0, &ret);
+  printf(1, "ipc: client(): end %d, start: %d\n",
+         end, start);
   printf(1, "ipc: client(): average cycles across %d runs: %d\n",
         ITERS, (unsigned long)(end - start)/ITERS);
   return;
