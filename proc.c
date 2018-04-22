@@ -629,14 +629,18 @@ sys_send_recv(void)
     _popcli();
     return -2;
   }
+
   copy_msg(message,&ipc_endpoints.endpoints[endp].m);
+  
   p->state = RUNNING;
   mine->state =IPC_DISPATCH;
   ipc_endpoints.endpoints[endp].p = mine;
   c->proc = p;
   c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
+  
   lcr3(V2P(p->pgdir));
   swtch(&mine->context, p->context);
+  
   _popcli();
   copy_msg(&ipc_endpoints.endpoints[endp].m, message);
   return 1;
