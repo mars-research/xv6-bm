@@ -56,12 +56,10 @@ entry:
   orl     $(CR0_PG|CR0_WP), %eax
   movl    %eax, %cr0
   
+  lgdt    bmgdtdesc
   ljmp    $(SEG_KCODE<<3), $bmstart32
 
 bmstart32:  
-  # Set up the stack pointer.
-  movl $(stack + KSTACKSIZE), %esp
-
   # Set up the protected-mode data segment registers
   movw    $(SEG_KDATA<<3), %ax    # Our data segment selector
   movw    %ax, %ds                # -> DS: Data Segment
@@ -71,6 +69,10 @@ bmstart32:
   movw    %ax, %fs                # -> FS
   movw    %ax, %gs                # -> GS
 
+  # Set up the stack pointer.
+  movl $(stack + KSTACKSIZE), %esp
+
+
   # Jump to main(), and switch to executing at
   # high addresses. The indirect call is needed because
   # the assembler produces a PC-relative instruction
@@ -78,7 +80,7 @@ bmstart32:
   mov $main, %eax
   jmp *%eax
 
-# Bare-metal ootstrap GDT
+# Bare-metal bootstrap GDT
 .p2align 2                                # force 4 byte alignment
 bmgdt:
   SEG_NULLASM                             # null seg
