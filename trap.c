@@ -18,7 +18,6 @@ uint ints_handled = 0;
 int last_int = -1; 
 
 void dump_state(struct trapframe *tf);
-void dump(); 
 
 void
 tvinit(void)
@@ -38,9 +37,12 @@ idtinit(void)
   lidt(idt, sizeof(idt));
 }
 
-void dump_stack(unsigned int stack) {
+void _dump_stack(unsigned int stack) {
+  /* Assume that entire stack page is mapped */
   unsigned int roundup = PGROUNDUP(stack) - sizeof(void *); 
   unsigned int counter = 0; 
+
+  cprintf("stack starting at:%x\n", stack); 
 
   /* Dump as words (4 bytes) in groups of 16 */
   cprintf("%x:", stack); 
@@ -55,12 +57,22 @@ void dump_stack(unsigned int stack) {
     counter ++; 
   }
 
+  cprintf(" ");
+
   /* If any bytes left 1-4 dump them as bytes */
   while (stack < roundup) {
     cprintf("%c ", *(char*)stack); 
     stack ++; 
   }
+
+  cprintf("\n");
+
 	
+}
+
+void dump_stack() {
+  unsigned int s; 
+  _dump_stack((unsigned int)&s);
 }
 
 void dump_state(struct trapframe *tf) {
@@ -85,8 +97,7 @@ void dump_state(struct trapframe *tf) {
   if (mycpu()->proc && mycpu()->proc->tf != tf)
     dump(); 
 
-  dump_stack(tf->esp);
-
+  _dump_stack(tf->esp);
   return;
 };
 
@@ -108,6 +119,7 @@ void
 trap(struct trapframe *tf)
 {
   ints_handled ++; 
+  dump_state(tf);
 
   if(tf->trapno == T_SYSCALL){
     last_int = T_SYSCALL;

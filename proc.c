@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "traps.h"
 
 struct {
   struct spinlock lock;
@@ -325,7 +326,10 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  
+ 
+  cprintf("Entering scheduler\n");
+  dump_stack();
+
   for(;;){
     // Enable interrupts on this processor.
     sti();
