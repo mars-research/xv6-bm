@@ -38,6 +38,29 @@ idtinit(void)
   lidt(idt, sizeof(idt));
 }
 
+void dump_stack(unsigned int stack) {
+  unsigned int roundup = PGROUNDUP(stack) - sizeof(void *); 
+  unsigned int counter = 0; 
+
+  /* Dump as words (4 bytes) in groups of 16 */
+  while (stack < roundup) {
+    cprintf("%x ", *(unsigned int *)stack); 
+    stack += sizeof(void *); 
+    if (counter == 15) {
+      counter = 0;
+      cprintf("\n");
+    }
+    counter ++; 
+  }
+
+  /* If any bytes left 1-4 dump them as bytes */
+  while (stack < roundup) {
+    cprintf("%c ", *(char*)stack); 
+    stack ++; 
+  }
+	
+}
+
 void dump_state(struct trapframe *tf) {
   cprintf("eax: %x, ebx: %x, ecx: %x, edx: %x\n",
           tf->eax, tf->ebx, tf->ecx, tf->edx);
@@ -59,6 +82,8 @@ void dump_state(struct trapframe *tf) {
 
   if (mycpu()->proc && mycpu()->proc->tf != tf)
     dump(); 
+
+  dump_stack(tf->esp);
 
   return;
 };
