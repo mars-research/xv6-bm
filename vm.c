@@ -261,18 +261,36 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   if(newsz >= oldsz)
     return oldsz;
 
+//  cprintf("dealloc(pid:%d,%s) old:%x, new:%x\n", 
+//              cpus[0].proc->pid, cpus[0].proc->name, oldsz, newsz);
+
   a = PGROUNDUP(newsz);
   for(; a  < oldsz; a += PGSIZE){
+ //   cprintf("dealloc(pid:%d,%s) a:%x\n", 
+ //             cpus[0].proc->pid, cpus[0].proc->name, a);
+
     pte = walkpgdir(pgdir, (char*)a, 0);
-    if(!pte)
-      a = PGADDR(PDX(a) + 1, 0, 0) - PGSIZE;
-    else if((*pte & PTE_P) != 0){
+    if(!pte) {
+  //     cprintf("dealloc(pid:%d,%s) no pte for user a:%x\n", 
+  //            cpus[0].proc->pid, cpus[0].proc->name, a);
+       a = PGADDR(PDX(a) + 1, 0, 0) - PGSIZE;
+    } else if((*pte & PTE_P) != 0){
       pa = PTE_ADDR(*pte);
-      if(pa == 0)
+
+  //    cprintf("dealloc(pid:%d,%s) user a:%x, pa:%x, va:%x\n", 
+  //            cpus[0].proc->pid, cpus[0].proc->name, a, pa, P2V(pa));
+      if (a == 0x3c5000)
+         dump_stack_addr((unsigned int)pte);
+
+      if(pa == 0) {
+        cprintf("for addr:%x, pa is 0\n", a);
         panic("kfree");
+      }
       char *v = P2V(pa);
       kfree(v);
       *pte = 0;
+    } else {
+
     }
   }
   return newsz;

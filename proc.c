@@ -557,7 +557,7 @@ _argint(int n, int *ip, struct proc * curproc)
 }
 
 __attribute__((always_inline)) static inline void
-copy_msg(struct msg * m1, struct msg * m2){
+copy_msg(struct msg * from, struct msg * to){
 /*for some reason, trap on sse
   asm("movaps (%0),%%xmm0\n\t"
       "movntps %%xmm0,(%1) "::"r" (m1),"r"(m2));
@@ -574,7 +574,7 @@ copy_msg(struct msg * m1, struct msg * m2){
   asm("movaps (%0),%%xmm0\n\t"
       "movntps %%xmm0,(%1) "::"r" (m1),"r"(m2));
       */
-     *m2 = *m1;   
+     //*to = *from;   
 }
 __attribute__((always_inline)) static inline int
 _argptr(int n, char **pp, int size, struct proc * curproc)
@@ -622,7 +622,8 @@ sys_send_recv(void)
     return -1;
   }
     
-  
+  cprintf("send_recv: endp:%d\n", endp);
+
   p = ipc_endpoints.endpoints[endp].p;
   if (__builtin_expect(p!=0?p->state!=IPC_DISPATCH:1, 0))
   {
@@ -660,7 +661,8 @@ sys_send(void)
     _popcli();
     return -1;
   }
-  
+ 
+  cprintf("send: endp:%d\n", endp); 
   p = ipc_endpoints.endpoints[endp].p;
   if (p!=0?p->state!=IPC_DISPATCH:1)
   {
@@ -685,8 +687,12 @@ sys_send(void)
 int recv(int endp, struct msg *message)
 {
   struct proc *p;
-  if(ipc_endpoints.endpoints[endp].p!=0)
+ 
+  cprintf("recv: endp:%d\n", endp);
+  if(ipc_endpoints.endpoints[endp].p!=0) {
+    copy_msg(&ipc_endpoints.endpoints[endp].m, message);
     return -1;
+  }
   
   disable_preempt(); 
   ipc_endpoints.endpoints[endp].p = (p = myproc());
