@@ -164,6 +164,9 @@ void            idtinit(void);
 extern uint     ticks;
 void            tvinit(void);
 extern struct spinlock tickslock;
+void            dump(); 
+void            dump_stack(char *s); 
+
 
 // uart.c
 void            uartinit(void);
