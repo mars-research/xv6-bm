@@ -88,7 +88,8 @@ main(void)
   } else {
     printf(1,"ipc: starting server\n");	  
     sleep(50);
-    server();      
+    server();     
+    wait();
   };
 
   exit();

@@ -20,7 +20,7 @@ main(void)
   dup(0);  // stderr
 
   for(;;){
-    printf(1, "init: starting sh\n");
+    printf(1, "init: starting tests\n");
     pid = fork();
     if(pid < 0){
       printf(1, "init: fork failed\n");
@@ -29,7 +29,6 @@ main(void)
     if(pid == 0){
       exec("ipc", argv);
       printf(1, "init: ipc done\n");
-      exit();
     }
     while((wpid=wait()) >= 0 && wpid != pid)
       printf(1, "zombie!\n");
