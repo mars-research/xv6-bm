@@ -97,6 +97,13 @@ found:
   release(&ptable.lock);
 
   // Allocate kernel stack.
+  if((p->sysenter_kstack = kalloc()) == 0){
+    p->state = UNUSED;
+    return 0;
+  }
+  p->sysenter_kstack += KSTACKSIZE;
+
+  // Allocate kernel stack.
   if((p->kstack = kalloc()) == 0){
     p->state = UNUSED;
     return 0;
@@ -197,6 +204,7 @@ fork(void)
   // Copy process state from proc.
   if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
     kfree(np->kstack);
+    kfree(np->sysenter_kstack - KSTACKSIZE);
     np->kstack = 0;
     np->state = UNUSED;
     return -1;
@@ -294,6 +302,8 @@ wait(void)
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
+        kfree(p->sysenter_kstack - KSTACKSIZE);
+        p->sysenter_kstack = 0;
         freevm(p->pgdir);
         p->pid = 0;
         p->parent = 0;
@@ -574,7 +584,7 @@ copy_msg(struct msg * from, struct msg * to){
   asm("movaps (%0),%%xmm0\n\t"
       "movntps %%xmm0,(%1) "::"r" (m1),"r"(m2));
       */
-     //*to = *from;   
+  *to = *from;   
 }
 __attribute__((always_inline)) static inline int
 _argptr(int n, char **pp, int size, struct proc * curproc)
@@ -622,7 +632,7 @@ sys_send_recv(void)
     return -1;
   }
     
-  cprintf("send_recv: endp:%d\n", endp);
+  //cprintf("send_recv: endp:%d\n", endp);
 
   p = ipc_endpoints.endpoints[endp].p;
   if (__builtin_expect(p!=0?p->state!=IPC_DISPATCH:1, 0))
@@ -662,7 +672,7 @@ sys_send(void)
     return -1;
   }
  
-  cprintf("send: endp:%d\n", endp); 
+  //cprintf("send: endp:%d\n", endp); 
   p = ipc_endpoints.endpoints[endp].p;
   if (p!=0?p->state!=IPC_DISPATCH:1)
   {
@@ -688,7 +698,7 @@ int recv(int endp, struct msg *message)
 {
   struct proc *p;
  
-  cprintf("recv: endp:%d\n", endp);
+  //cprintf("recv: endp:%d\n", endp);
   if(ipc_endpoints.endpoints[endp].p!=0) {
     copy_msg(&ipc_endpoints.endpoints[endp].m, message);
     return -1;

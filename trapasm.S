@@ -16,8 +16,8 @@
 # jmp sys_send_recv_o
 
 syscall_entry:
-#  movl  (0xac+cpus), %esp
-#  movl 0x08(%esp), %esp
+  movl  (0xac+cpus), %esp
+  movl 0x0c(%esp), %esp
 #  addl KSTACKSIZE, %esp
   push %eax
   push %ecx
