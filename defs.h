@@ -169,6 +169,8 @@ extern uint     ticks;
 extern uint     nopreempt;
 void            tvinit(void);
 extern struct spinlock tickslock;
+void            dump(); 
+void            dump_stack(char *s); 
 
 // uart.c
 void            uartinit(void);
@@ -190,6 +192,8 @@ void            switchuvm(struct proc*);
 void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
+
+
 
 // number of elements in fixed-size array
 extern int (*syscalls[25])(void);
