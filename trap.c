@@ -43,12 +43,14 @@ void dump_stack(unsigned int stack) {
   unsigned int counter = 0; 
 
   /* Dump as words (4 bytes) in groups of 16 */
+  cprintf("%x:", stack); 
   while (stack < roundup) {
     cprintf("%x ", *(unsigned int *)stack); 
     stack += sizeof(void *); 
     if (counter == 15) {
       counter = 0;
       cprintf("\n");
+      cprintf("%x:", stack);
     }
     counter ++; 
   }
