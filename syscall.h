@@ -24,3 +24,4 @@
 #define SYS_send   23
 #define SYS_send_recv       24
 #define SYS_sysenter_null   25
+#define SYS_int_null        26

@@ -618,6 +618,12 @@ static inline void _popcli(){
 }
 
 int
+sys_int_null(void)
+{
+  return 0;
+}
+
+int
 sys_sysenter_null(void)
 {
   return 0;
