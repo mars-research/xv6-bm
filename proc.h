@@ -34,7 +34,7 @@ struct context {
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE, IPC_DISPATCH };
 struct msg{
-  int regs[16];
+  int regs[1];
 };
 // Per-process state
 struct proc {
