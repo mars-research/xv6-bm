@@ -328,7 +328,7 @@ scheduler(void)
   c->proc = 0;
  
   cprintf("Entering scheduler\n");
-  dump_stack();
+  dump_stack("scheduler");
 
   for(;;){
     // Enable interrupts on this processor.

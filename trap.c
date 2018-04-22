@@ -70,8 +70,7 @@ void _dump_stack(unsigned int stack) {
 	
 }
 
-void dump_stack() {
-  unsigned int s; 
+void dump_stack(char *s) {
   _dump_stack((unsigned int)&s);
 }
 
@@ -97,7 +96,8 @@ void dump_state(struct trapframe *tf) {
   if (mycpu()->proc && mycpu()->proc->tf != tf)
     dump(); 
 
-  _dump_stack(tf->esp);
+  /* Inside the trap function, tf is on top of the stack */
+  _dump_stack((unsigned int)tf);
   return;
 };
 

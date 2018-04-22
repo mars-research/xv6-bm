@@ -37,6 +37,6 @@
 #define IRQ_SPURIOUS    31
 
 void dump(); 
-void dump_stack(); 
+void dump_stack(char *s); 
 
 
