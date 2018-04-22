@@ -588,9 +588,19 @@ _argptr(int n, char **pp, int size, struct proc * curproc)
   *pp = (char*)i;
   return 0;
 }
+
+__attribute__((always_inline))
+static inline void disable_preempt(){
+  nopreempt = 1;
+}
+__attribute__((always_inline))
+static inline void enable_preempt(){
+  nopreempt = 0;
+}
+
 __attribute__((always_inline))
 static inline void _pushcli(){
- // nopreempt = 1;
+  //nopreempt = 1;
 }
 __attribute__((always_inline))
 static inline void _popcli(){
@@ -664,6 +674,7 @@ sys_send(void)
   lcr3(V2P(p->pgdir));
   swtch(&mine->context, p->context);
   release(&ptable.lock);
+  enable_preempt();
   return 1;
 }
 
@@ -673,6 +684,7 @@ int recv(int endp, struct msg *message)
   if(ipc_endpoints.endpoints[endp].p!=0)
     return -1;
   
+  disable_preempt(); 
   ipc_endpoints.endpoints[endp].p = (p = myproc());
   p->state = IPC_DISPATCH;
   acquire(&ptable.lock);
