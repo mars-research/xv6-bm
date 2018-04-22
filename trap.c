@@ -14,6 +14,9 @@ extern uint vectors[];  // in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
 uint ticks;
 
+uint ints_handled = 0; 
+int last_int = -1; 
+
 void dump_state(struct trapframe *tf);
 void dump(); 
 
@@ -45,9 +48,14 @@ void dump_state(struct trapframe *tf) {
   cprintf("err: %x, eip: %x, cs: %x, esp: %x, eflags: %x\n",
           tf->err, tf->eip, tf->cs, tf->esp, tf->eflags);
 
+  cprintf("stats: interrupts handled: %d, last int: %d\n",
+          ints_handled, last_int);
+
   if (mycpu()->proc)
     cprintf("current process, id: %d, name:%s\n", 
           mycpu()->proc->pid, mycpu()->proc->name);
+  else 
+    cprintf("current process is NULL\n"); 
 
   if (mycpu()->proc && mycpu()->proc->tf != tf)
     dump(); 
@@ -72,7 +80,10 @@ void dump() {
 void
 trap(struct trapframe *tf)
 {
+  ints_handled ++; 
+
   if(tf->trapno == T_SYSCALL){
+    last_int = T_SYSCALL;
     if(myproc()->killed)
       exit();
     myproc()->tf = tf;
@@ -84,6 +95,7 @@ trap(struct trapframe *tf)
 
   switch(tf->trapno){
   case T_IRQ0 + IRQ_TIMER:
+    last_int = tf->trapno; 
     if(cpuid() == 0){
       acquire(&tickslock);
       ticks++;
@@ -93,17 +105,21 @@ trap(struct trapframe *tf)
     lapiceoi();
     break;
   case T_IRQ0 + IRQ_IDE:
+    last_int = tf->trapno; 
     ideintr();
     lapiceoi();
     break;
   case T_IRQ0 + IRQ_IDE+1:
+    last_int = tf->trapno; 
     // Bochs generates spurious IDE1 interrupts.
     break;
   case T_IRQ0 + IRQ_KBD:
+    last_int = tf->trapno; 
     kbdintr();
     lapiceoi();
     break;
   case T_IRQ0 + IRQ_COM1:
+    last_int = tf->trapno; 
     uartintr();
     lapiceoi();
     break;

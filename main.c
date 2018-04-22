@@ -56,7 +56,6 @@ mpmain(void)
   cprintf("cpu%d: starting %d\n", cpuid(), cpuid());
   idtinit();       // load idt register
   xchg(&(mycpu()->started), 1); // tell startothers() we're up
-  //asm volatile("mov $0x7FFFFFF, %%esp; int $3" : : ); 
   scheduler();     // start running processes
 }
 
