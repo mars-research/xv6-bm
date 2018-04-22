@@ -106,6 +106,7 @@ extern int sys_uptime(void);
 extern int sys_recv(void);
 extern int sys_send_recv(void);
 extern int sys_send(void);
+extern int sys_sysenter_null(void);
 
 int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -129,10 +130,12 @@ int (*syscalls[])(void) = {
 [SYS_link]    sys_link,
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
-[SYS_recv]   sys_recv,
 
-[SYS_send]   sys_send,
-[SYS_send_recv]   sys_send_recv,
+[SYS_recv]    sys_recv,
+[SYS_send]    sys_send,
+[SYS_send_recv]       sys_send_recv,
+[SYS_sysenter_null]   sys_sysenter_null,
+
 };
 
 void

@@ -29,6 +29,9 @@ int uptime(void);
 int recv(int, struct msg*);
 int send(int,struct msg*);
 int send_recv(int,struct msg*);
+int sysenter_null(void);
+
+
 // ulib.c
 int stat(char*, struct stat*);
 char* strcpy(char*, char*);

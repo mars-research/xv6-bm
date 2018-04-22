@@ -33,6 +33,23 @@ static __inline__ unsigned long long rdtsc(void)
 
 #define diff(x, i1) *((unsigned long long *)&ret.regs[i1*2+2]) - *((unsigned long long *)&ret.regs[i1*2])
 
+void test_sysenter_null() {
+  unsigned long i; 
+  unsigned long long start, end; 
+
+        
+  start = rdtsc();
+  for(i = 0; i < ITERS - 1; i++){
+    sysenter_null();
+  }
+
+  end = rdtsc();
+        
+  printf(1, "overhead of sysenter average cycles %d across runs: %d\n",
+        ITERS, (unsigned long)(end - start)/ITERS);
+  return;
+}
+
 void client() {
   unsigned long i; 
   unsigned long long start, end; 
@@ -77,7 +94,9 @@ main(void)
 {
   int pid;
   printf(1, "ipc: starting test\n");
-  
+
+  test_sysenter_null();
+ 
   pid = fork();
   if(pid < 0){
     printf(1,"ipc: cannot fork\n");

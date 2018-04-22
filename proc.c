@@ -616,6 +616,13 @@ __attribute__((always_inline))
 static inline void _popcli(){
   //nopreempt = 0;
 }
+
+int
+sys_sysenter_null(void)
+{
+  return 0;
+}
+
 int
 sys_send_recv(void)
 {
