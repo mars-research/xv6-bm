@@ -16,17 +16,17 @@
 # jmp sys_send_recv_o
 
 syscall_entry:
-movl  (0xac+cpus), %esp
-movl 0x08(%esp), %esp
-addl KSTACKSIZE, %esp
-push %eax
-push %ecx
-call sysenter_dispatch
-pop %ecx
-mov (%ecx), %edx
-add $4, %ecx
-sti
-sysexit
+#  movl  (0xac+cpus), %esp
+#  movl 0x08(%esp), %esp
+#  addl KSTACKSIZE, %esp
+  push %eax
+  push %ecx
+  call sysenter_dispatch
+  pop %ecx
+  mov (%ecx), %edx
+  add $4, %ecx
+  sti
+  sysexit
 
   # vectors.S sends all traps here.
 .globl alltraps

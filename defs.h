@@ -171,6 +171,7 @@ void            tvinit(void);
 extern struct spinlock tickslock;
 void            dump(); 
 void            dump_stack(char *s); 
+void            dump_stack_addr(unsigned int a);
 
 // uart.c
 void            uartinit(void);

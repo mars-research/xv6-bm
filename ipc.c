@@ -7,7 +7,7 @@
 
 typedef unsigned int uint32_t; 
 typedef  unsigned long long uint64_t;
-#define ITERS 1000
+#define ITERS 10
 
 /*
 uint32_t UInt64DivAndGetMod(uint64_t *a, uint32_t b) {

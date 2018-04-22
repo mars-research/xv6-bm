@@ -71,6 +71,10 @@ void dump_stack(char *s) {
   _dump_stack((unsigned int)&s);
 }
 
+void dump_stack_addr(unsigned int a) {
+  _dump_stack(a);
+}
+
 void dump_state(struct trapframe *tf) {
   cprintf("eax: %x, ebx: %x, ecx: %x, edx: %x\n",
           tf->eax, tf->ebx, tf->ecx, tf->edx);
@@ -113,6 +117,10 @@ void trap(struct trapframe *tf)
 {
   int num;
 
+//if(PGROUNDUP((unsigned int)tf) - (unsigned int) tf > 500){
+//    cprintf("stack page is full: tf:%x\n", tf);    
+//  }
+    
   if (tf->trapno == T_SYSCALL)
   {
     if (cpus[0].proc->killed)
