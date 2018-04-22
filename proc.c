@@ -327,9 +327,6 @@ scheduler(void)
   struct cpu *c = mycpu();
   c->proc = 0;
  
-  cprintf("Entering scheduler\n");
-  dump_stack("scheduler");
-
   for(;;){
     // Enable interrupts on this processor.
     sti();
