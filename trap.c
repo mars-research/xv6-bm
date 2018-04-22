@@ -45,6 +45,10 @@ void dump_state(struct trapframe *tf) {
   cprintf("err: %x, eip: %x, cs: %x, esp: %x, eflags: %x\n",
           tf->err, tf->eip, tf->cs, tf->esp, tf->eflags);
 
+  if (mycpu()->proc)
+    cprintf("current process, id: %d, name:%s\n", 
+          mycpu()->proc->pid, mycpu()->proc->name);
+
   if (mycpu()->proc && mycpu()->proc->tf != tf)
     dump(); 
 
