@@ -39,7 +39,7 @@ void test_int_null() {
 
         
   start = rdtsc();
-  for(i = 0; i < ITERS - 1; i++){
+  for(i = 0; i < ITERS; i++){
     int_null();
   }
 
@@ -56,7 +56,7 @@ void test_sysenter_null() {
 
         
   start = rdtsc();
-  for(i = 0; i < ITERS - 1; i++){
+  for(i = 0; i < ITERS; i++){
     sysenter_null();
   }
 
@@ -101,13 +101,15 @@ void server(void){
   unsigned long long start, end; 
   struct msg ret __attribute__ ((aligned (64)));
 
+  send_recv(0, &ret);
   start = rdtsc();
 
-  for(i = 0; i < ITERS; i++){
+  for(i = 0; i < ITERS - 2 ; i++){
     send_recv(0, &ret);
   }
         
   end = rdtsc(); 
+  send_recv(0, &ret);
         
   printf(1, "ipc: server(): average cycles across %d runs: %d\n",
          ITERS, (unsigned long)(end - start)/ITERS);
