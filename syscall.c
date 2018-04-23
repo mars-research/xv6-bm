@@ -112,6 +112,7 @@ extern int sys_test_pgdir(void);
 extern int sys_oops(void);
 extern int sys_send_recv_dummy(void);
 extern int sys_cr3_reload(void);
+extern int sys_test_size(void);
 
 int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -145,6 +146,7 @@ int (*syscalls[])(void) = {
 [SYS_oops]    sys_oops,
 [SYS_send_recv_dummy] sys_send_recv_dummy,
 [SYS_cr3_reload]      sys_cr3_reload,
+[SYS_test_size]       sys_test_size,
 
 
 };

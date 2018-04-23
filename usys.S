@@ -43,4 +43,5 @@ SYSCALL(test_pgdir)
 SYSCALL(oops)
 SYSCALL_FAST(send_recv_dummy)
 SYSCALL_FAST(cr3_reload)
+SYSCALL(test_size)
 

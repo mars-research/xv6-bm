@@ -30,6 +30,19 @@ void sysenterinit(){
 }
 
 int sum = 0;
+int test_size;
+
+int
+sys_test_size(void)
+{
+  int n;
+
+  if(argint(0, &n) < 0)
+    return -1;
+  
+  test_size = n; 
+  return 0;
+}
 
 int sysenter_dispatch_test( uint stack, uint num) {
   //struct proc *p;
@@ -42,7 +55,7 @@ int sysenter_dispatch_test( uint stack, uint num) {
 
   //lcr3(V2P(p->pgdir));
 
-  for (i = 0; i < 100; i++) {
+  for (i = 0; i < test_size; i++) {
      sum += *(int *)a; 
      a += PGSIZE; 
   }    

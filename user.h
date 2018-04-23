@@ -32,6 +32,7 @@ int test_pgdir(void);
 int oops(void);
 int send_recv_dummy(int,struct msg*);
 int cr3_reload(int,struct msg*);
+int test_size(int);
 
 // ulib.c
 int stat(char*, struct stat*);
