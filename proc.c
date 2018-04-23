@@ -680,6 +680,44 @@ test_two_pgdir(void)
   return 0;
 }
 
+int
+test_two_pgdir_two_pagewalks(void)
+{
+  unsigned long i, found = 0; 
+  unsigned long long start, end; 
+  struct proc *p, *p2;
+  struct cpu  *c;
+  int *pcode = 0x0; 
+  int *pstack = (int*)0x2000;
+  int sum = 0; 
+  
+  c = &cpus[0];
+  p = c->proc;
+
+  for(p2 = ptable.proc; p2 < &ptable.proc[NPROC]; p2++)
+    if((p2->state != UNUSED && p2->state != EMBRYO) && p2->pid != p->pid) {
+      found = 1;
+      break;
+    }
+
+  if(!found) {
+    cprintf("failed to find the second process\n");
+    return -1;
+  }  
+        
+  start = rdtsc();
+  for(i = 0; i < ITERS - 1; i++){
+    lcr3(V2P(p2->pgdir));
+    sum += (*pcode) + (*pstack);  
+    lcr3(V2P(p->pgdir));
+    sum += (*pcode) + (*pstack);  
+  }
+  end = rdtsc();
+        
+  cprintf("overhead of switching one page table to another and back with 2 page walks: cycles %d across runs: %d, sum:%d\n",
+        ITERS, (unsigned long)(end - start)/ITERS, sum);
+  return 0;
+}
 
 int
 sys_test_pgdir(void)
@@ -688,6 +726,7 @@ sys_test_pgdir(void)
 
   test_one_pgdir();
   test_two_pgdir(); 
+  test_two_pgdir_two_pagewalks(); 
 
   release(&ptable.lock);
   return 0; 
@@ -721,6 +760,7 @@ sys_send_recv(void)
   mine = c->proc;
   if(__builtin_expect(_argint(0, &endp, mine) < 0||_argptr(1,(char**)&message,sizeof(struct msg), mine)<0, 0)){
     _popcli();
+    cprintf("send_recv: wrong args\n");
     return -1;
   }
     
@@ -730,13 +770,15 @@ sys_send_recv(void)
   if (__builtin_expect(p!=0?p->state!=IPC_DISPATCH:1, 0))
   {
     _popcli();
+    cprintf("shouldn't happen, p:%x", p);
+    if(p) cprintf("state:%d\n", p->state);
     return -2;
   }
 
   copy_msg(message,&ipc_endpoints.endpoints[endp].m);
   
   p->state = RUNNING;
-  mine->state =IPC_DISPATCH;
+  mine->state = IPC_DISPATCH;
   ipc_endpoints.endpoints[endp].p = mine;
   c->proc = p;
   c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;

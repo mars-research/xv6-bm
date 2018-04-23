@@ -72,7 +72,7 @@ void client() {
   //unsigned long long start, end; 
   struct msg ret __attribute__ ((aligned (64)));
 
-  oops();
+  //oops();
 
   recv(0,&ret);
         
@@ -85,7 +85,7 @@ void client() {
         
   send(0, &ret);
 
-  oops(); 
+  //oops(); 
 
 /*  printf(1, "just a check\n"); 
 
