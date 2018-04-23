@@ -67,23 +67,40 @@ void test_sysenter_null() {
   return;
 }
 
+void test_send_recv_dummy() {
+  unsigned long i; 
+  unsigned long long start, end; 
+  struct msg m __attribute__ ((aligned (64)));
+
+        
+  start = rdtsc();
+  for(i = 0; i < ITERS; i++){
+    send_recv_dummy(0, &m);
+  }
+
+  end = rdtsc();
+        
+  printf(1, "overhead of send_recv_dummy average cycles %d across runs: %d\n",
+        ITERS, (unsigned long)(end - start)/ITERS);
+  return;
+}
 void client() {
   unsigned long i; 
   //unsigned long long start, end; 
-  struct msg ret __attribute__ ((aligned (64)));
+  struct msg m __attribute__ ((aligned (64)));
 
   //oops();
 
-  recv(0,&ret);
+  recv(0,&m);
         
   //start = rdtsc();
   for(i = 0; i < ITERS - 1; i++){
-    send_recv(0, &ret);
+    send_recv(0, &m);
   }
 
   //end = rdtsc();
         
-  send(0, &ret);
+  send(0, &m);
 
   //oops(); 
 
@@ -99,17 +116,17 @@ void client() {
 void server(void){
   unsigned long i; 
   unsigned long long start, end; 
-  struct msg ret __attribute__ ((aligned (64)));
+  struct msg m __attribute__ ((aligned (64)));
 
-  send_recv(0, &ret);
+  send_recv(0, &m);
   start = rdtsc();
 
   for(i = 0; i < ITERS - 2 ; i++){
-    send_recv(0, &ret);
+    send_recv(0, &m);
   }
         
   end = rdtsc(); 
-  send_recv(0, &ret);
+  send_recv(0, &m);
         
   printf(1, "ipc: server(): average cycles across %d runs: %d\n",
          ITERS, (unsigned long)(end - start)/ITERS);
@@ -124,6 +141,7 @@ main(void)
   test_int_null();
   test_sysenter_null();
   test_pgdir(); 
+  test_send_recv_dummy();
  
   pid = fork();
   if(pid < 0){

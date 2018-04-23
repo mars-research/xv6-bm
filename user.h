@@ -30,7 +30,7 @@ int sysenter_null(void);
 int int_null(void);
 int test_pgdir(void);
 int oops(void);
-
+int send_recv_dummy(int,struct msg*);
 
 // ulib.c
 int stat(char*, struct stat*);

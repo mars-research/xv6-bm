@@ -41,3 +41,5 @@ SYSCALL_FAST(sysenter_null)
 SYSCALL(int_null)
 SYSCALL(test_pgdir)
 SYSCALL(oops)
+SYSCALL_FAST(send_recv_dummy)
+

@@ -745,10 +745,10 @@ sys_sysenter_null(void)
 }
 
 int
-sys_send_recv(void)
+sys_send_recv_dummy(void)
 {
   int endp = 0;
-  struct msg * message;
+  //struct msg * message;
   struct proc *p;
   struct proc *mine;
   struct cpu  *c;
@@ -774,7 +774,55 @@ sys_send_recv(void)
     return -2;
   }
 
-  copy_msg(message,&ipc_endpoints.endpoints[endp].m);
+  //copy_msg(message,&ipc_endpoints.endpoints[endp].m);
+  
+  p->state = RUNNING;
+  mine->state = IPC_DISPATCH;
+  ipc_endpoints.endpoints[endp].p = mine;
+  c->proc = p;
+  c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
+  
+  lcr3(V2P(p->pgdir));
+  lcr3(V2P(mine->pgdir));
+
+  //swtch(&mine->context, p->context);
+  
+  //_popcli();
+  //copy_msg(&ipc_endpoints.endpoints[endp].m, message);
+  return 1;
+}
+
+int
+sys_send_recv(void)
+{
+  int endp = 0;
+  //struct msg * message;
+  struct proc *p;
+  struct proc *mine;
+  struct cpu  *c;
+  _pushcli();
+
+  c = &cpus[0];
+  mine = c->proc;
+/*  if(__builtin_expect(_argint(0, &endp, mine) < 0||_argptr(1,(char**)&message,sizeof(struct msg), mine)<0, 0)){
+    _popcli();
+    cprintf("send_recv: wrong args\n");
+    return -1;
+  }
+ */   
+  //cprintf("send_recv: endp:%d\n", endp);
+
+  p = ipc_endpoints.endpoints[endp].p;
+  if (!p || (p->state != IPC_DISPATCH))
+  {
+    _popcli();
+    empty_rvp ++; 
+    cprintf("shouldn't happen, p:%x, endp:%d\n", p, endp);
+    if(p) cprintf("state:%d\n", p->state);
+    return -2;
+  }
+
+  //copy_msg(message,&ipc_endpoints.endpoints[endp].m);
   
   p->state = RUNNING;
   mine->state = IPC_DISPATCH;
@@ -785,8 +833,8 @@ sys_send_recv(void)
   lcr3(V2P(p->pgdir));
   swtch(&mine->context, p->context);
   
-  _popcli();
-  copy_msg(&ipc_endpoints.endpoints[endp].m, message);
+  //_popcli();
+  //copy_msg(&ipc_endpoints.endpoints[endp].m, message);
   return 1;
 }
 int

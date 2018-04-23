@@ -110,6 +110,7 @@ extern int sys_sysenter_null(void);
 extern int sys_int_null(void);
 extern int sys_test_pgdir(void);
 extern int sys_oops(void);
+extern int sys_send_recv_dummy(void);
 
 int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -141,7 +142,7 @@ int (*syscalls[])(void) = {
 [SYS_int_null]        sys_int_null,
 [SYS_test_pgdir]      sys_test_pgdir,
 [SYS_oops]    sys_oops,
-
+[SYS_send_recv_dummy] sys_send_recv_dummy,
 };
 
 void
