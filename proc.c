@@ -754,7 +754,7 @@ sys_cr3_reload(void)
   p = c->proc;
 
   lcr3(V2P(p->pgdir));
-  lcr3(V2P(p->pgdir));
+  //lcr3(V2P(p->pgdir));
 
   return 1;
 }
