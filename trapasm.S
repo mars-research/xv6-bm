@@ -15,7 +15,13 @@
 # push eax
 # jmp sys_send_recv_o
 
-
+# %ecx contains user %esp
+# %eax contains syscall number
+#
+# syscall_entry must preserve callee registers: EBP, EBX, EDI and ESI
+# We don't touch them, hence sysenter_dispatch() will preserve them
+# %esp will be restored by the sysexit
+#
 syscall_entry:
   movl (0xac+cpus), %esp
   movl 0x0c(%esp), %esp
