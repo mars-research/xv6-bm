@@ -765,6 +765,7 @@ sys_send_recv_dummy(void)
   //cprintf("send_recv: endp:%d\n", endp);
 
   p = ipc_endpoints.endpoints[endp].p;
+  p = mine; 
   if (!p || (p->state != IPC_DISPATCH))
   {
     _popcli();
