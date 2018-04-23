@@ -1,8 +1,5 @@
 struct stat;
 struct rtcdate;
-struct msg{
-  int regs[16];
-};
 
 // system calls
 int fork(void);

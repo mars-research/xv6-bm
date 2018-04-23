@@ -129,7 +129,7 @@ void dump() {
 
 void sys_oops() {
   pushcli(); 
-  cprintf("\nuser oops, pid:%d, name%s\n", 
+  cprintf("\nuser oops, pid:%d, name:%s\n", 
     mycpu()->proc->pid, mycpu()->proc->name);
   dump_state(mycpu()->proc->tf);
   dump_stack_addr(mycpu()->proc->tf->esp); 
