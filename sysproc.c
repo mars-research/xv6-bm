@@ -90,14 +90,4 @@ sys_uptime(void)
   return xticks;
 }
 
-int
-sys_recv(void)
-{
-  //cprintf("HELLO FROM RECV\n");
-  int endp;
-  struct msg * message;
-  if(argint(0, &endp) < 0||argptr(1,(char**)&message,sizeof(struct msg))<0)
-    return -1;
-  return recv(endp, message);
 
-}

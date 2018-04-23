@@ -134,7 +134,7 @@ main(void)
     client(); 
   } else {
     //printf(1,"ipc: starting server\n");	  
-    sleep(5);
+    sleep(50);
     server();     
     wait();
   };

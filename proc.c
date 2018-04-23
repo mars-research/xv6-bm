@@ -9,6 +9,7 @@
 
 int int_count; 
 int switch_count; 
+int empty_rvp; 
 
 struct {
   struct spinlock lock;
@@ -764,10 +765,11 @@ sys_send_recv(void)
   //cprintf("send_recv: endp:%d\n", endp);
 
   p = ipc_endpoints.endpoints[endp].p;
-  if (__builtin_expect(p!=0?p->state!=IPC_DISPATCH:1, 0))
+  if (!p || (p->state != IPC_DISPATCH))
   {
     _popcli();
-    cprintf("shouldn't happen, p:%x", p);
+    empty_rvp ++; 
+    cprintf("shouldn't happen, p:%x, endp:%d\n", p, endp);
     if(p) cprintf("state:%d\n", p->state);
     return -2;
   }
@@ -795,13 +797,14 @@ sys_send(void)
   struct proc *p;
   struct proc *mine;
   struct cpu  *c;
-  int cnt, s_cnt; 
+  int cnt, s_cnt, e_cnt; 
   _pushcli();
   c = &cpus[0];
   mine = c->proc;
 
   cnt = int_count;
-  s_cnt = switch_count; 
+  s_cnt = switch_count;
+  e_cnt = empty_rvp;  
  
 /* 
   if(_argint(0, &endp, mine) < 0||_argptr(1,(char**)&message,sizeof(struct msg), mine)<0){
@@ -828,17 +831,30 @@ sys_send(void)
   release(&ptable.lock);
   enable_preempt();
 
-  cprintf("interrupt count:%d, sched count:%d\n", cnt, s_cnt);
+  cprintf("interrupt count:%d, sched count:%d, empty_rvp:%d\n", cnt, s_cnt, e_cnt);
 
   return 1;
+}
+
+int
+sys_recv(void)
+{
+  //cprintf("HELLO FROM RECV\n");
+  int endp = 0;
+  struct msg * message = 0;
+  //if(argint(0, &endp) < 0||argptr(1,(char**)&message,sizeof(struct msg))<0)
+  //  return -1;
+  return recv(endp, message);
+
 }
 
 int recv(int endp, struct msg *message)
 {
   struct proc *p;
- 
+  
   int_count = 0; 
   switch_count = 0; 
+  empty_rvp = 0;
 
 /*
   //cprintf("recv: endp:%d\n", endp);
@@ -848,8 +864,9 @@ int recv(int endp, struct msg *message)
   }
 */
   
-  disable_preempt(); 
-  ipc_endpoints.endpoints[endp].p = (p = myproc());
+  disable_preempt();
+  p = myproc(); 
+  ipc_endpoints.endpoints[endp].p = p;
   p->state = IPC_DISPATCH;
   acquire(&ptable.lock);
   swtch(&p->context, mycpu()->scheduler);
