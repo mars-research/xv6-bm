@@ -29,9 +29,9 @@ void sysenterinit(){
   wrmsr(0x176,(uint)syscall_entry, 0);
 }
 int sysenter_dispatch( uint stack, uint num){
-  struct trapframe *tf = cpus[0].proc->tf;
+//struct trapframe *tf = cpus[0].proc->tf;
   
-  tf->esp = stack;
+//  tf->esp = stack;
   if (num < NELEM(syscalls) && syscalls[num])
     return syscalls[num]();
   else

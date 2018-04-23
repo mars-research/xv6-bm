@@ -589,7 +589,7 @@ copy_msg(struct msg * from, struct msg * to){
   asm("movaps (%0),%%xmm0\n\t"
       "movntps %%xmm0,(%1) "::"r" (m1),"r"(m2));
       */
-  *to = *from;   
+ // *to = *from;   
 }
 __attribute__((always_inline)) static inline int
 _argptr(int n, char **pp, int size, struct proc * curproc)
@@ -746,7 +746,7 @@ sys_sysenter_null(void)
 int
 sys_send_recv(void)
 {
-  int endp;
+  int endp = 0;
   struct msg * message;
   struct proc *p;
   struct proc *mine;
@@ -755,12 +755,12 @@ sys_send_recv(void)
 
   c = &cpus[0];
   mine = c->proc;
-  if(__builtin_expect(_argint(0, &endp, mine) < 0||_argptr(1,(char**)&message,sizeof(struct msg), mine)<0, 0)){
+/*  if(__builtin_expect(_argint(0, &endp, mine) < 0||_argptr(1,(char**)&message,sizeof(struct msg), mine)<0, 0)){
     _popcli();
     cprintf("send_recv: wrong args\n");
     return -1;
   }
-    
+ */   
   //cprintf("send_recv: endp:%d\n", endp);
 
   p = ipc_endpoints.endpoints[endp].p;
@@ -790,7 +790,7 @@ sys_send_recv(void)
 int
 sys_send(void)
 {
-  int endp;
+  int endp = 0;
   struct msg * message;
   struct proc *p;
   struct proc *mine;
@@ -803,13 +803,12 @@ sys_send(void)
   cnt = int_count;
   s_cnt = switch_count; 
  
-  cprintf("intrrupt count:%d, sched count:%d\n", cnt, s_cnt);
- 
+/* 
   if(_argint(0, &endp, mine) < 0||_argptr(1,(char**)&message,sizeof(struct msg), mine)<0){
     _popcli();
     return -1;
   }
- 
+*/
   //cprintf("send: endp:%d\n", endp); 
   p = ipc_endpoints.endpoints[endp].p;
   if (p!=0?p->state!=IPC_DISPATCH:1)
@@ -817,7 +816,6 @@ sys_send(void)
     _popcli();
     return -2;
   }
-  
   
   copy_msg(message,&ipc_endpoints.endpoints[endp].m);
   p->state = RUNNING;
@@ -829,6 +827,9 @@ sys_send(void)
   swtch(&mine->context, p->context);
   release(&ptable.lock);
   enable_preempt();
+
+  cprintf("interrupt count:%d, sched count:%d\n", cnt, s_cnt);
+
   return 1;
 }
 
@@ -839,12 +840,13 @@ int recv(int endp, struct msg *message)
   int_count = 0; 
   switch_count = 0; 
 
-
+/*
   //cprintf("recv: endp:%d\n", endp);
   if(ipc_endpoints.endpoints[endp].p!=0) {
     copy_msg(&ipc_endpoints.endpoints[endp].m, message);
     return -1;
   }
+*/
   
   disable_preempt(); 
   ipc_endpoints.endpoints[endp].p = (p = myproc());
