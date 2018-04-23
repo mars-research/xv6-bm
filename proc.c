@@ -769,9 +769,9 @@ sys_send_recv_dummy(void)
   {
     _popcli();
     empty_rvp ++; 
-    cprintf("shouldn't happen, p:%x, endp:%d\n", p, endp);
-    if(p) cprintf("state:%d\n", p->state);
-    return -2;
+    //cprintf("shouldn't happen, p:%x, endp:%d\n", p, endp);
+    //if(p) cprintf("state:%d\n", p->state);
+    //return -2;
   }
 
   //copy_msg(message,&ipc_endpoints.endpoints[endp].m);
