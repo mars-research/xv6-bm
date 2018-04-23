@@ -122,10 +122,10 @@ main(void)
   }
 
   if(pid == 0){
-    printf(1,"ipc: starting client\n");
+    //printf(1,"ipc: starting client\n");
     client(); 
   } else {
-    printf(1,"ipc: starting server\n");	  
+    //printf(1,"ipc: starting server\n");	  
     sleep(50);
     server();     
     wait();

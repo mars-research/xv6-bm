@@ -17,15 +17,15 @@
 
 
 syscall_entry:
-  movl  (0xac+cpus), %esp
+  movl (0xac+cpus), %esp
   movl 0x0c(%esp), %esp
 #  addl KSTACKSIZE, %esp
-  push %eax
-  push %ecx
+  push %eax             # push syscall number as arg on the stack
+  push %ecx             # ecx contains user-level esp
   call sysenter_dispatch
   pop %ecx
-  mov (%ecx), %edx
-  add $4, %ecx
+  mov (%ecx), %edx      # put user-level ip into edx
+  add $4, %ecx          # put user-level esp into ecx
   sti
   sysexit
 
