@@ -53,7 +53,7 @@ void _dump_stack(unsigned int stack) {
   /* Dump as words (4 bytes) in groups of 16, but dump the 
      last 1-4 bytes individually, in case we're spill out in the 
      next page that might be unmapped */
-  cprintf("%x", stack); 
+  cprintf("%x:", stack); 
   while (stack < roundup - sizeof(void *)) {
     cprintf("%x ", *(unsigned int *)stack); 
     stack += sizeof(void *); 
@@ -69,7 +69,7 @@ void _dump_stack(unsigned int stack) {
 
   /* If any bytes left 1-4 dump them as bytes */
   while (stack < roundup) {
-    cprintf("%c ", *(char*)stack); 
+    cprintf("%x ", *(char*)stack); 
     stack ++; 
   }
 
@@ -125,6 +125,11 @@ void dump() {
 
   dump_state(mycpu()->proc->tf); 
   return;
+};
+
+void sys_oops() {
+  dump_state(mycpu()->proc->tf);
+  dump_stack_addr(mycpu()->proc->tf->esp); 
 };
 
 //PAGEBREAK: 41

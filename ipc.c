@@ -72,6 +72,8 @@ void client() {
   unsigned long long start, end; 
   struct msg ret __attribute__ ((aligned (64)));
 
+  oops();
+
   recv(0,&ret);
         
   start = rdtsc();
@@ -82,6 +84,9 @@ void client() {
   end = rdtsc();
         
   send(0, &ret);
+
+  oops(); 
+
   printf(1, "ipc: client(): end %d, start: %d\n",
          end, start);
   printf(1, "ipc: client(): average cycles across %d runs: %d\n",
