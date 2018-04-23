@@ -31,6 +31,7 @@ int int_null(void);
 int test_pgdir(void);
 int oops(void);
 int send_recv_dummy(int,struct msg*);
+int cr3_reload(int,struct msg*);
 
 // ulib.c
 int stat(char*, struct stat*);

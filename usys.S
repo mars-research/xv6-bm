@@ -42,4 +42,5 @@ SYSCALL(int_null)
 SYSCALL(test_pgdir)
 SYSCALL(oops)
 SYSCALL_FAST(send_recv_dummy)
+SYSCALL_FAST(cr3_reload)
 

@@ -67,6 +67,25 @@ void test_sysenter_null() {
   return;
 }
 
+void test_cr3_reload() {
+  unsigned long i; 
+  unsigned long long start, end; 
+  struct msg m __attribute__ ((aligned (64)));
+
+        
+  start = rdtsc();
+  for(i = 0; i < ITERS; i++){
+    cr3_reload(0, &m);
+  }
+
+  end = rdtsc();
+        
+  printf(1, "overhead of cs3_reload average cycles %d across runs: %d\n",
+        ITERS, (unsigned long)(end - start)/ITERS);
+  return;
+}
+
+
 void test_send_recv_dummy() {
   unsigned long i; 
   unsigned long long start, end; 
@@ -140,7 +159,8 @@ main(void)
 
   test_int_null();
   test_sysenter_null();
-  test_pgdir(); 
+  test_pgdir();
+  test_cr3_reload();
   test_send_recv_dummy();
  
   pid = fork();

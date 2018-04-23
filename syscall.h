@@ -28,3 +28,4 @@
 #define SYS_test_pgdir      27
 #define SYS_oops   28
 #define SYS_send_recv_dummy 29
+#define SYS_cr3_reload      30

@@ -745,6 +745,21 @@ sys_sysenter_null(void)
 }
 
 int
+sys_cr3_reload(void)
+{
+  struct proc *p;
+  struct cpu  *c;
+
+  c = &cpus[0];
+  p = c->proc;
+
+  lcr3(V2P(p->pgdir));
+  lcr3(V2P(p->pgdir));
+
+  return 1;
+}
+
+int
 sys_send_recv_dummy(void)
 {
   int endp = 0;
