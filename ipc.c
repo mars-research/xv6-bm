@@ -114,6 +114,7 @@ main(void)
 
   test_int_null();
   test_sysenter_null();
+  test_pgdir(); 
  
   pid = fork();
   if(pid < 0){

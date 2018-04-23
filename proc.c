@@ -617,6 +617,30 @@ static inline void _popcli(){
   //nopreempt = 0;
 }
 
+#define ITERS 1000000
+
+int
+sys_test_pgdir(void)
+{
+  unsigned long i; 
+  unsigned long long start, end; 
+  struct proc *p;
+  struct cpu  *c;
+  
+  c = &cpus[0];
+  p = c->proc;
+        
+  start = rdtsc();
+  for(i = 0; i < ITERS - 1; i++){
+    lcr3(V2P(p->pgdir));
+  }
+  end = rdtsc();
+        
+  cprintf("overhead of loading CR3 average cycles %d across runs: %d\n",
+        ITERS, (unsigned long)(end - start)/ITERS);
+  return 0;
+}
+
 int
 sys_int_null(void)
 {

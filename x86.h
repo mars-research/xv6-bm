@@ -17,10 +17,14 @@ insl(int port, void *addr, int cnt)
                "d" (port), "0" (addr), "1" (cnt) :
                "memory", "cc");
 }
-static inline void rdtsc(unsigned long long * tsc)
+
+static inline unsigned long long rdtsc(void)
 {
-    asm volatile ("rdtsc" : "=A" (*tsc));
+    unsigned long long x;
+    __asm__ volatile ("rdtsc" : "=A" (x));
+    return x;
 }
+
 static inline void
 outb(ushort port, uchar data)
 {
