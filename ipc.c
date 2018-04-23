@@ -87,12 +87,12 @@ void client() {
 
   oops(); 
 
-  printf(1, "just a check\n"); 
+/*  printf(1, "just a check\n"); 
 
   printf(1, "ipc: client(): end %d, start: %d\n",
          (unsigned long)end, (unsigned long)start);
   printf(1, "ipc: client(): average cycles across %d runs: %d\n",
-        (unsigned long) ITERS, (unsigned long)(end - start)/ITERS);
+        (unsigned long) ITERS, (unsigned long)(end - start)/ITERS); */
   return;
 }
 
