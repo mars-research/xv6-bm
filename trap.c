@@ -128,8 +128,10 @@ void dump() {
 };
 
 void sys_oops() {
+  pushcli(); 
   dump_state(mycpu()->proc->tf);
   dump_stack_addr(mycpu()->proc->tf->esp); 
+  popcli();
 };
 
 //PAGEBREAK: 41
