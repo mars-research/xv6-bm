@@ -8,6 +8,7 @@
 #include "spinlock.h"
 
 int int_count; 
+int switch_count; 
 
 struct {
   struct spinlock lock;
@@ -363,6 +364,8 @@ scheduler(void)
       swtch(&(c->scheduler), p->context);
       switchkvm();
 
+      switch_count ++; 
+
       // Process is done running for now.
       // It should have changed its p->state before coming back.
       c->proc = 0;
@@ -712,6 +715,7 @@ sys_send_recv(void)
   _pushcli();
 
   int_count = 0; 
+  switch_count = 0; 
 
   c = &cpus[0];
   mine = c->proc;
@@ -752,13 +756,16 @@ sys_send(void)
   struct proc *p;
   struct proc *mine;
   struct cpu  *c;
-  int cnt; 
+  int cnt, s_cnt; 
   _pushcli();
   c = &cpus[0];
   mine = c->proc;
 
-  cnt = int_count; 
-  cprintf("intrrupt count:%d\n", cnt); 
+  cnt = int_count;
+  s_cnt = switch_count; 
+ 
+  cprintf("intrrupt count:%d, sched count:%d\n", cnt, s_cnt);
+ 
   if(_argint(0, &endp, mine) < 0||_argptr(1,(char**)&message,sizeof(struct msg), mine)<0){
     _popcli();
     return -1;
