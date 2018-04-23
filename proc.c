@@ -653,7 +653,7 @@ test_two_pgdir(void)
   p = c->proc;
 
   for(p2 = ptable.proc; p2 < &ptable.proc[NPROC]; p2++)
-    if(p2->state == RUNNABLE && p2->pid != p->pid) {
+    if((p2->state != UNUSED && p2->state != EMBRYO) && p2->pid != p->pid) {
       found = 1;
       break;
     }
