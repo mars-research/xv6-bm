@@ -753,9 +753,6 @@ sys_send_recv(void)
   struct cpu  *c;
   _pushcli();
 
-  int_count = 0; 
-  switch_count = 0; 
-
   c = &cpus[0];
   mine = c->proc;
   if(__builtin_expect(_argint(0, &endp, mine) < 0||_argptr(1,(char**)&message,sizeof(struct msg), mine)<0, 0)){
@@ -839,6 +836,10 @@ int recv(int endp, struct msg *message)
 {
   struct proc *p;
  
+  int_count = 0; 
+  switch_count = 0; 
+
+
   //cprintf("recv: endp:%d\n", endp);
   if(ipc_endpoints.endpoints[endp].p!=0) {
     copy_msg(&ipc_endpoints.endpoints[endp].m, message);
