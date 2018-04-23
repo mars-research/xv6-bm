@@ -32,15 +32,15 @@ void sysenterinit(){
 int sum = 0;
 
 int sysenter_dispatch_test( uint stack, uint num) {
-  struct proc *p;
-  struct cpu  *c;
+  //struct proc *p;
+  //struct cpu  *c;
   char *a = (char *)KERNLINK;
   int i;  
  
-  c = &cpus[0];
-  p = c->proc;
+  //c = &cpus[0];
+  //p = c->proc;
 
-  lcr3(V2P(p->pgdir));
+  //lcr3(V2P(p->pgdir));
 
   for (i = 0; i < 100; i++) {
      sum += *(int *)a; 
