@@ -37,14 +37,24 @@ idtinit(void)
 
 void _dump_stack(unsigned int stack) {
   /* Assume that entire stack page is mapped */
-  unsigned int roundup = PGROUNDUP(stack) - sizeof(void *); 
+  unsigned int roundup = PGROUNDUP(stack); 
   unsigned int counter = 0; 
+
+  /* If we're exactly at the start of the page, 
+     dump next page, well, really we don't know 
+     whether the stack is empty or full, so the 
+     next page might be unmapped 
+   */
+  if (roundup == stack)
+    roundup = roundup + PGSIZE;
 
   cprintf("stack starting at:%x\n", stack); 
 
-  /* Dump as words (4 bytes) in groups of 16 */
-  cprintf("%x: roundup:%x", stack, roundup); 
-  while (stack < roundup) {
+  /* Dump as words (4 bytes) in groups of 16, but dump the 
+     last 1-4 bytes individually, in case we're spill out in the 
+     next page that might be unmapped */
+  cprintf("%x", stack); 
+  while (stack < roundup - sizeof(void *)) {
     cprintf("%x ", *(unsigned int *)stack); 
     stack += sizeof(void *); 
     if (counter == 15) {
@@ -84,6 +94,11 @@ void dump_state(struct trapframe *tf) {
           tf->gs, tf->fs, tf->es, tf->ds, tf->ss);
   cprintf("err: %x, eip: %x, cs: %x, esp: %x, eflags: %x\n",
           tf->err, tf->eip, tf->cs, tf->esp, tf->eflags);
+}
+
+void dump_kernel(struct trapframe *tf) {
+
+  dump_state(tf); 
 
   if (mycpu()->proc)
     cprintf("current process, id: %d, name:%s\n", 
@@ -188,7 +203,7 @@ void trap(struct trapframe *tf)
       // In kernel, it must be our mistake.
       cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
               tf->trapno, cpuid(), tf->eip, rcr2());
-      dump_state(tf); 
+      dump_kernel(tf); 
       dump();
       panic("trap");
     }
