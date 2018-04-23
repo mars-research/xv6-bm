@@ -129,6 +129,8 @@ void dump() {
 
 void sys_oops() {
   pushcli(); 
+  cprintf("\nuser oops, pid:%d, name%s\n", 
+    mycpu()->proc->pid, mycpu()->proc->name);
   dump_state(mycpu()->proc->tf);
   dump_stack_addr(mycpu()->proc->tf->esp); 
   popcli();
@@ -213,14 +215,14 @@ void trap(struct trapframe *tf)
       dump_kernel(tf); 
       dump();
       panic("trap");
-    }
+    } 
     // In user space, assume process misbehaved.
-    cprintf("pid %d %s: trap %d err %d on cpu %d "
+    cprintf("\npid %d %s: trap %d err %d on cpu %d "
             "eip 0x%x addr 0x%x--kill proc\n",
             myproc()->pid, myproc()->name, tf->trapno,
             tf->err, cpuid(), tf->eip, rcr2());
     dump_state(tf);
-    dump_stack_addr(0);
+    //dump_stack_addr(0);
     dump_stack_addr(tf->esp); 
     myproc()->killed = 1;
   }
