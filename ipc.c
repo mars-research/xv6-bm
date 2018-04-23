@@ -69,19 +69,19 @@ void test_sysenter_null() {
 
 void client() {
   unsigned long i; 
-  unsigned long long start, end; 
+  //unsigned long long start, end; 
   struct msg ret __attribute__ ((aligned (64)));
 
   oops();
 
   recv(0,&ret);
         
-  start = rdtsc();
+  //start = rdtsc();
   for(i = 0; i < ITERS - 1; i++){
     send_recv(0, &ret);
   }
 
-  end = rdtsc();
+  //end = rdtsc();
         
   send(0, &ret);
 
