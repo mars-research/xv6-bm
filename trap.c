@@ -197,6 +197,8 @@ void trap(struct trapframe *tf)
             "eip 0x%x addr 0x%x--kill proc\n",
             myproc()->pid, myproc()->name, tf->trapno,
             tf->err, cpuid(), tf->eip, rcr2());
+    dump_state(tf);
+    dump_stack_addr(0); 
     myproc()->killed = 1;
   }
 
