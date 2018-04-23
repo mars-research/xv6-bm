@@ -248,6 +248,44 @@ allocuvm(pde_t *pgdir, uint oldsz, uint newsz)
   return newsz;
 }
 
+// Dump user page table
+//
+void
+dump_pgdir(pde_t *pgdir, uint from, uint to)
+{
+  pte_t *pte;
+  uint a, pa;
+
+//  cprintf("dealloc(pid:%d,%s) old:%x, new:%x\n", 
+//              cpus[0].proc->pid, cpus[0].proc->name, oldsz, newsz);
+
+  a = PGROUNDDOWN(from);
+  for(; a  < to; a += PGSIZE){
+ //   cprintf("dealloc(pid:%d,%s) a:%x\n", 
+ //             cpus[0].proc->pid, cpus[0].proc->name, a);
+
+    pte = walkpgdir(pgdir, (char*)a, 0);
+    if(!pte) {
+  //     cprintf("dealloc(pid:%d,%s) no pte for user a:%x\n", 
+  //            cpus[0].proc->pid, cpus[0].proc->name, a);
+       a = PGADDR(PDX(a) + 1, 0, 0) - PGSIZE;
+    } else if((*pte & PTE_P) != 0){
+      pa = PTE_ADDR(*pte);
+
+  //    cprintf("dealloc(pid:%d,%s) user a:%x, pa:%x, va:%x\n", 
+  //            cpus[0].proc->pid, cpus[0].proc->name, a, pa, P2V(pa));
+      if(pa == 0) {
+        cprintf("for addr:%x, pa is 0\n", a);
+        panic("dump_pgdir");
+      }
+      cprintf("v:%x, p:%x, f:%x\n", 
+               a, pa,
+               (*pte) & (PTE_P | PTE_W | PTE_U | PTE_PWT | PTE_PCD | PTE_A | PTE_D | PTE_PS | PTE_MBZ )); 
+      //char *v = P2V(pa);
+    } 
+  }
+}
+
 // Deallocate user pages to bring the process size from oldsz to
 // newsz.  oldsz and newsz need not be page-aligned, nor does newsz
 // need to be less than oldsz.  oldsz can be larger than the actual
@@ -279,9 +317,6 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
 
   //    cprintf("dealloc(pid:%d,%s) user a:%x, pa:%x, va:%x\n", 
   //            cpus[0].proc->pid, cpus[0].proc->name, a, pa, P2V(pa));
-      if (a == 0x3c5000)
-         dump_stack_addr((unsigned int)pte);
-
       if(pa == 0) {
         cprintf("for addr:%x, pa is 0\n", a);
         panic("kfree");

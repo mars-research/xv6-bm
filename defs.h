@@ -193,6 +193,7 @@ void            switchuvm(struct proc*);
 void            switchkvm(void);
 int             copyout(pde_t*, uint, void*, uint);
 void            clearpteu(pde_t *pgdir, char *uva);
+void            dump_pgdir(pde_t *pgdir, uint from, uint to);
 
 
 

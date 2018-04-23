@@ -227,7 +227,8 @@ void trap(struct trapframe *tf)
             tf->err, cpuid(), tf->eip, rcr2());
     dump_state(tf);
     //dump_stack_addr(0);
-    dump_stack_addr(tf->esp); 
+    dump_stack_addr(tf->esp);
+    dump_pgdir(myproc()->pgdir, 0, KERNBASE);  
     myproc()->killed = 1;
   }
 
