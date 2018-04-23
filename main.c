@@ -42,7 +42,7 @@ int sysenter_dispatch_test( uint stack, uint num) {
 
   lcr3(V2P(p->pgdir));
 
-  for (i = 0; i < 10; i++) {
+  for (i = 0; i < 100; i++) {
      sum += *(int *)a; 
      a += PGSIZE; 
   }    
