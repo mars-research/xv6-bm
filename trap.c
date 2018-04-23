@@ -15,6 +15,8 @@ struct spinlock tickslock;
 uint ticks;
 uint nopreempt;
 
+extern int int_count; 
+
 void dump_state(struct trapframe *tf);
 
 void
@@ -140,6 +142,8 @@ void sys_oops() {
 void trap(struct trapframe *tf)
 {
   int num;
+  
+  int_count ++; 
 
 //if(PGROUNDUP((unsigned int)tf) - (unsigned int) tf > 500){
 //    cprintf("stack page is full: tf:%x\n", tf);    
