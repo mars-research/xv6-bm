@@ -620,7 +620,7 @@ static inline void _popcli(){
 #define ITERS 1000000
 
 int
-sys_test_pgdir(void)
+test_one_pgdir(void)
 {
   unsigned long i; 
   unsigned long long start, end; 
@@ -641,6 +641,52 @@ sys_test_pgdir(void)
   return 0;
 }
 
+int
+test_two_pgdir(void)
+{
+  unsigned long i, found = 0; 
+  unsigned long long start, end; 
+  struct proc *p, *p2;
+  struct cpu  *c;
+  
+  c = &cpus[0];
+  p = c->proc;
+
+  for(p2 = ptable.proc; p2 < &ptable.proc[NPROC]; p2++)
+    if(p2->state == RUNNABLE && p2->pid != p->pid) {
+      found = 1;
+      break;
+    }
+
+  if(!found) {
+    cprintf("failed to find the second process\n");
+    return -1;
+  }  
+        
+  start = rdtsc();
+  for(i = 0; i < ITERS - 1; i++){
+    lcr3(V2P(p2->pgdir));
+    lcr3(V2P(p->pgdir));
+  }
+  end = rdtsc();
+        
+  cprintf("overhead of switching one page table to another and back cycles %d across runs: %d\n",
+        ITERS, (unsigned long)(end - start)/ITERS);
+  return 0;
+}
+
+
+int
+sys_test_pgdir(void)
+{
+  acquire(&ptable.lock);
+
+  test_one_pgdir();
+  test_two_pgdir(); 
+
+  release(&ptable.lock);
+  return 0; 
+};
 int
 sys_int_null(void)
 {
