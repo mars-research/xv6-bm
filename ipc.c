@@ -154,15 +154,16 @@ void server(void){
 int
 main(void)
 {
-  int pid;
+//  int pid;
   printf(1, "ipc: starting test\n");
 
-  test_int_null();
-  test_sysenter_null();
-  test_pgdir();
+  //test_int_null();
+  //test_sysenter_null();
+  //test_pgdir();
   test_cr3_reload();
-  test_send_recv_dummy();
+  //test_send_recv_dummy();
  
+#if 0  
   pid = fork();
   if(pid < 0){
     printf(1,"ipc: cannot fork\n");
@@ -178,6 +179,7 @@ main(void)
     server();     
     wait();
   };
+#endif
 
   exit();
 }
