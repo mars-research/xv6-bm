@@ -43,7 +43,7 @@ void _dump_stack(unsigned int stack) {
   cprintf("stack starting at:%x\n", stack); 
 
   /* Dump as words (4 bytes) in groups of 16 */
-  cprintf("%x:", stack); 
+  cprintf("%x: roundup:%x", stack, roundup); 
   while (stack < roundup) {
     cprintf("%x ", *(unsigned int *)stack); 
     stack += sizeof(void *); 
@@ -198,7 +198,8 @@ void trap(struct trapframe *tf)
             myproc()->pid, myproc()->name, tf->trapno,
             tf->err, cpuid(), tf->eip, rcr2());
     dump_state(tf);
-    dump_stack_addr(0); 
+    dump_stack_addr(0);
+    dump_stack_addr(tf->esp); 
     myproc()->killed = 1;
   }
 
