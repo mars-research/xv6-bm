@@ -35,7 +35,7 @@ struct context {
 
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE, IPC_DISPATCH };
 
-#define PROC_SYSENTER_STACK_SIZE 256
+#define PROC_SYSENTER_STACK_SIZE 512
 
 // Per-process state
 struct proc {
