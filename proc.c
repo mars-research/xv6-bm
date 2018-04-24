@@ -12,7 +12,7 @@ int int_count;
 int switch_count; 
 int empty_rvp; 
 
-struct cpu cpus[NCPU];
+struct cpu cpus[NCPU] __attribute__ ((aligned (4096)));;
 
 struct {
   struct spinlock lock;
