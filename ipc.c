@@ -154,23 +154,23 @@ void server(void){
 int
 main(void)
 {
-  int i; 
-//  int pid;
+//  int i; 
+  int pid;
   printf(1, "ipc: starting test\n");
 
   //test_int_null();
   //test_sysenter_null();
   //test_pgdir();
   
-  for (i = 0; i < 128; i++) {
-    test_size(i);
-    printf(1, "touch %d pages:", i);
-    test_cr3_reload();
-  }
+//  for (i = 0; i < 128; i++) {
+//    test_size(i);
+//    printf(1, "touch %d pages:", i);
+//    test_cr3_reload();
+//  }
 
   //test_send_recv_dummy();
  
-#if 0  
+#if 1  
   pid = fork();
   if(pid < 0){
     printf(1,"ipc: cannot fork\n");

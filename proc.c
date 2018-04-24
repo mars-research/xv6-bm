@@ -6,6 +6,7 @@
 #include "x86.h"
 #include "proc.h"
 #include "spinlock.h"
+#include "syscall.h"
 
 int int_count; 
 int switch_count; 
@@ -15,12 +16,16 @@ struct {
   struct spinlock lock;
   struct proc proc[NPROC];
 } ptable;
-struct {
-  struct{
+
+struct endpoint {
     struct proc * p;
     struct msg m __attribute__ ((aligned (16)));
-  } endpoints[NENDS];
+};
+
+struct {
+  struct endpoint endpoints[NENDS];
 } ipc_endpoints;
+
 static struct proc *initproc;
 
 int nextpid = 1;
@@ -808,7 +813,40 @@ sys_send_recv_dummy(void)
   return 1;
 }
 
+int sum = 0;
+int test_size;
+
 int
+sys_test_size(void)
+{
+  int n;
+
+  if(argint(0, &n) < 0)
+    return -1;
+  
+  test_size = n; 
+  return 0;
+}
+
+int sysenter_dispatch_test( uint stack, uint num) {
+  struct proc *p;
+  struct cpu  *c;
+  char *a = (char *)KERNLINK;
+  int i;  
+ 
+  c = &cpus[0];
+  p = c->proc;
+
+  lcr3(V2P(p->pgdir));
+
+  for (i = 0; i < test_size; i++) {
+     sum += *(int *)a; 
+     a += PGSIZE; 
+  }    
+  return 0;
+}
+
+int inline 
 sys_send_recv(void)
 {
   int endp = 0;
@@ -828,7 +866,8 @@ sys_send_recv(void)
  */   
   //cprintf("send_recv: endp:%d\n", endp);
 
-  p = ipc_endpoints.endpoints[endp].p;
+  //p = ipc_endpoints.endpoints[endp].p;
+  p = c->rvp_p; 
   if (!p || (p->state != IPC_DISPATCH))
   {
     _popcli();
@@ -842,7 +881,8 @@ sys_send_recv(void)
   
   p->state = RUNNING;
   mine->state = IPC_DISPATCH;
-  ipc_endpoints.endpoints[endp].p = mine;
+  //ipc_endpoints.endpoints[endp].p = mine;
+  c->rvp_p = mine;
   c->proc = p;
   c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
   
@@ -853,6 +893,20 @@ sys_send_recv(void)
   //copy_msg(&ipc_endpoints.endpoints[endp].m, message);
   return 1;
 }
+
+int sysenter_dispatch( uint stack, uint num){
+//struct trapframe *tf = cpus[0].proc->tf;
+  if( num == SYS_send_recv)
+    return sys_send_recv(); 
+//  tf->esp = stack;
+  if (num < NELEM(syscalls) && syscalls[num])
+    return syscalls[num]();
+  else
+    /* Invalid syscall number */	  
+    return -2; 
+}
+
+
 int
 sys_send(void)
 {
@@ -877,7 +931,8 @@ sys_send(void)
   }
 */
   //cprintf("send: endp:%d\n", endp); 
-  p = ipc_endpoints.endpoints[endp].p;
+  //p = ipc_endpoints.endpoints[endp].p;
+  p = mycpu()->rvp_p; 
   if (p!=0?p->state!=IPC_DISPATCH:1)
   {
     _popcli();
@@ -887,7 +942,8 @@ sys_send(void)
   copy_msg(message,&ipc_endpoints.endpoints[endp].m);
   p->state = RUNNING;
   mine->state =RUNNABLE;
-  ipc_endpoints.endpoints[endp].p = 0;
+  //ipc_endpoints.endpoints[endp].p = 0;
+  mycpu()->rvp_p = 0; 
   c->proc = p;
   c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
   lcr3(V2P(p->pgdir));
@@ -930,7 +986,8 @@ int recv(int endp, struct msg *message)
   
   disable_preempt();
   p = myproc(); 
-  ipc_endpoints.endpoints[endp].p = p;
+  //ipc_endpoints.endpoints[endp].p = p;
+  mycpu()->rvp_p = p; 
   p->state = IPC_DISPATCH;
   acquire(&ptable.lock);
   swtch(&p->context, mycpu()->scheduler);

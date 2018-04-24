@@ -29,50 +29,6 @@ void sysenterinit(){
   wrmsr(0x176,(uint)syscall_entry, 0);
 }
 
-int sum = 0;
-int test_size;
-
-int
-sys_test_size(void)
-{
-  int n;
-
-  if(argint(0, &n) < 0)
-    return -1;
-  
-  test_size = n; 
-  return 0;
-}
-
-int sysenter_dispatch_test( uint stack, uint num) {
-  struct proc *p;
-  struct cpu  *c;
-  char *a = (char *)KERNLINK;
-  int i;  
- 
-  c = &cpus[0];
-  p = c->proc;
-
-  lcr3(V2P(p->pgdir));
-
-  for (i = 0; i < test_size; i++) {
-     sum += *(int *)a; 
-     a += PGSIZE; 
-  }    
-  return 0;
-}
-
-int sysenter_dispatch( uint stack, uint num){
-//struct trapframe *tf = cpus[0].proc->tf;
- 
-//  tf->esp = stack;
-  if (num < NELEM(syscalls) && syscalls[num])
-    return syscalls[num]();
-  else
-    /* Invalid syscall number */	  
-    return -2; 
-}
-
 // Bootstrap processor starts running C code here.
 // Allocate a real stack and switch to it, first
 // doing some setup required for memory allocator to work.
