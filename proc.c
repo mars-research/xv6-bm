@@ -106,12 +106,12 @@ found:
   release(&ptable.lock);
 
   // Allocate kernel stack.
-  if((p->sysenter_kstack = kalloc()) == 0){
-    p->state = UNUSED;
-    return 0;
-  }
-  p->sysenter_kstack += KSTACKSIZE;
-
+  //if((p->sysenter_kstack = kalloc()) == 0){
+  //  p->state = UNUSED;
+  //  return 0;
+  //}
+  //p->sysenter_kstack += KSTACKSIZE;
+  p->sysenter_kstack = (char*)&(p->sysenter_stack[0]) + PROC_SYSENTER_STACK_SIZE;
   // Allocate kernel stack.
   if((p->kstack = kalloc()) == 0){
     p->state = UNUSED;
@@ -213,7 +213,7 @@ fork(void)
   // Copy process state from proc.
   if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
     kfree(np->kstack);
-    kfree(np->sysenter_kstack - KSTACKSIZE);
+    //kfree(np->sysenter_kstack - KSTACKSIZE);
     np->kstack = 0;
     np->state = UNUSED;
     return -1;
@@ -311,7 +311,7 @@ wait(void)
         pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
-        kfree(p->sysenter_kstack - KSTACKSIZE);
+        //kfree(p->sysenter_kstack - KSTACKSIZE);
         p->sysenter_kstack = 0;
         freevm(p->pgdir);
         p->pid = 0;
@@ -932,7 +932,7 @@ sys_send(void)
 */
   //cprintf("send: endp:%d\n", endp); 
   //p = ipc_endpoints.endpoints[endp].p;
-  p = mycpu()->rvp_p; 
+  p = (&cpus[0])->rvp_p; 
   if (p!=0?p->state!=IPC_DISPATCH:1)
   {
     _popcli();
@@ -943,7 +943,7 @@ sys_send(void)
   p->state = RUNNING;
   mine->state =RUNNABLE;
   //ipc_endpoints.endpoints[endp].p = 0;
-  mycpu()->rvp_p = 0; 
+  (&cpus[0])->rvp_p = 0; 
   c->proc = p;
   c->ts.esp0 = (uint)p->kstack + KSTACKSIZE;
   lcr3(V2P(p->pgdir));
@@ -987,10 +987,10 @@ int recv(int endp, struct msg *message)
   disable_preempt();
   p = myproc(); 
   //ipc_endpoints.endpoints[endp].p = p;
-  mycpu()->rvp_p = p; 
+  (&cpus[0])->rvp_p = p; 
   p->state = IPC_DISPATCH;
   acquire(&ptable.lock);
-  swtch(&p->context, mycpu()->scheduler);
+  swtch(&p->context, (&cpus[0])->scheduler);
   _popcli();
   copy_msg(&ipc_endpoints.endpoints[endp].m, message);
   return 1;

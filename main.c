@@ -24,7 +24,7 @@ void sseinit(){
 }
 void sysenterinit(){
   wrmsr(0x174,SEG_KCODE<<3, 0);
-  //wrmsr(0x175,(uint)((unsigned int)sysenter_stack + KSTACKSIZE), 0);
+ // wrmsr(0x175,(uint)((unsigned int)sysenter_stack + KSTACKSIZE), 0);
   wrmsr(0x175, 0, 0);
   wrmsr(0x176,(uint)syscall_entry, 0);
 }
