@@ -61,4 +61,5 @@ struct proc {
 //   original data and bss
 //   fixed-size stack
 //   expandable heap
+extern int sysenter_dispatch( uint stack, uint num) __attribute__ ((section (".entrycode")));
 

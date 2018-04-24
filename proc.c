@@ -896,7 +896,25 @@ sys_send_recv(void)
   return 1;
 }
 
-int sysenter_dispatch( uint stack, uint num){
+#if 0
+
+__asm__ ("      .text \n\t"
+         "      .align  4096            \n\t"
+         "      .globl  _syscall_entry_f \n\t"
+         "      .type   _syscall_entry_f, @function \n\t"
+         " movl (0xac+cpus), %esp            \n\t"  
+         " movl 0x0c(%esp), %esp              \n\t" 
+         " push %eax      \n\t"
+         " push %ecx \n\t" 
+         " push %ecx \n\t" 
+         " push %ecx \n\t" 
+
+         );
+
+#endif 
+
+
+int sysenter_dispatch( uint stack, uint num) {
 //struct trapframe *tf = cpus[0].proc->tf;
   if( num == SYS_send_recv)
     return sys_send_recv(); 

@@ -23,6 +23,7 @@ SECTIONS
 
 	.text : AT(0x101000) {
 		*(.text .stub .text.* .gnu.linkonce.t.*)
+                *(.entrycode .stub .entrycode.* .gnu.linkonce.t.*)
 	}
 
 	PROVIDE(etext = .);	/* Define the 'etext' symbol to this value */

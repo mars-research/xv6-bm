@@ -1,5 +1,6 @@
 #include "mmu.h"
 #include "param.h"
+.section .entrycode
 .extern cpus
 
 
