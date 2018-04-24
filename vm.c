@@ -8,7 +8,7 @@
 #include "elf.h"
 
 extern char data[];  // defined by kernel.ld
-pde_t *kpgdir;  // for use in scheduler()
+pde_t *kpgdir = 0;  // for use in scheduler()
 
 // Set up CPU's kernel segment descriptors.
 // Run once on entry on each CPU.
@@ -122,6 +122,16 @@ static struct kmap {
  { (void*)DEVSPACE, DEVSPACE,      0,         PTE_W}, // more devices
 };
 
+pde_t *copykpgdir(pde_t * pgdir)
+{
+  int i;
+  for (i = PDX(KERNBASE); i < NPDENTRIES; i++){
+    //cprintf("copy entry:%d, kpgdir[%d]:%x\n", i, i, kpgdir[i]); 
+    pgdir[i] = kpgdir[i];
+  }
+  return pgdir;
+}
+
 // Set up kernel part of a page table.
 pde_t*
 setupkvm(void)
@@ -132,6 +142,9 @@ setupkvm(void)
   if((pgdir = (pde_t*)kalloc()) == 0)
     return 0;
   memset(pgdir, 0, PGSIZE);
+  if (kpgdir) {
+    return copykpgdir(pgdir);
+  }
   if (P2V(PHYSTOP) > (void*)DEVSPACE)
     panic("PHYSTOP too high");
   for(k = kmap; k < &kmap[NELEM(kmap)]; k++)
@@ -336,17 +349,17 @@ deallocuvm(pde_t *pgdir, uint oldsz, uint newsz)
 void
 freevm(pde_t *pgdir)
 {
-  uint i;
+  //uint i;
 
   if(pgdir == 0)
     panic("freevm: no pgdir");
   deallocuvm(pgdir, KERNBASE, 0);
-  for(i = 0; i < NPDENTRIES; i++){
-    if(pgdir[i] & PTE_P){
-      char * v = P2V(PTE_ADDR(pgdir[i]));
-      kfree(v);
-    }
-  }
+  //for(i = 0; i < NPDENTRIES; i++){
+  //  if(pgdir[i] & PTE_P){
+  //    char * v = P2V(PTE_ADDR(pgdir[i]));
+  //    kfree(v);
+  //  }
+  //}
   kfree((char*)pgdir);
 }
 
