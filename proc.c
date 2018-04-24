@@ -12,6 +12,8 @@ int int_count;
 int switch_count; 
 int empty_rvp; 
 
+struct cpu cpus[NCPU];
+
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
