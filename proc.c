@@ -12,12 +12,12 @@ int int_count;
 int switch_count; 
 int empty_rvp; 
 
-struct cpu cpus[NCPU] __attribute__ ((aligned (4096)));;
+struct cpu cpus[NCPU] __attribute__ ((aligned (4096)));
 
 struct {
   struct spinlock lock;
   struct proc proc[NPROC];
-} ptable;
+} ptable __attribute__ ((aligned (64)));
 
 struct endpoint {
     struct proc * p;
@@ -851,7 +851,7 @@ int sysenter_dispatch_test( uint stack, uint num) {
 int inline 
 sys_send_recv(void)
 {
-  int endp = 0;
+  //int endp = 0;
   //struct msg * message;
   struct proc *p;
   struct proc *mine;
@@ -873,9 +873,9 @@ sys_send_recv(void)
   if (!p || (p->state != IPC_DISPATCH))
   {
     _popcli();
-    empty_rvp ++; 
-    cprintf("shouldn't happen, p:%x, endp:%d\n", p, endp);
-    if(p) cprintf("state:%d\n", p->state);
+    //empty_rvp ++; 
+    //cprintf("shouldn't happen, p:%x, endp:%d\n", p, endp);
+    //if(p) cprintf("state:%d\n", p->state);
     return -2;
   }
 
@@ -895,23 +895,6 @@ sys_send_recv(void)
   //copy_msg(&ipc_endpoints.endpoints[endp].m, message);
   return 1;
 }
-
-#if 0
-
-__asm__ ("      .text \n\t"
-         "      .align  4096            \n\t"
-         "      .globl  _syscall_entry_f \n\t"
-         "      .type   _syscall_entry_f, @function \n\t"
-         " movl (0xac+cpus), %esp            \n\t"  
-         " movl 0x0c(%esp), %esp              \n\t" 
-         " push %eax      \n\t"
-         " push %ecx \n\t" 
-         " push %ecx \n\t" 
-         " push %ecx \n\t" 
-
-         );
-
-#endif 
 
 
 int sysenter_dispatch( uint stack, uint num) {
