@@ -23,6 +23,8 @@ int getpid(void);
 char* sbrk(int);
 int sleep(int);
 int uptime(void);
+
+// ipc syscalls
 int recv(int, struct msg*);
 int send(int,struct msg*);
 int send_recv(int,struct msg*);

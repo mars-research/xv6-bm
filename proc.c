@@ -102,6 +102,7 @@ allocproc(void)
   return 0;
 
 found:
+  cprintf("allocated p:%x\n", p);
   p->state = EMBRYO;
   p->pid = nextpid++;
 

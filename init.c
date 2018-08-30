@@ -28,7 +28,7 @@ main(void)
     }
     if(pid == 0){
       exec("ipc", argv);
-      printf(1, "init: ipc done\n");
+      printf(1, "init: ipc failed\n");
     }
     while((wpid=wait()) >= 0 && wpid != pid)
       printf(1, "zombie!\n");
