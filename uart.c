@@ -2,14 +2,6 @@
 
 #include "types.h"
 #include "defs.h"
-#include "param.h"
-#include "traps.h"
-//#include "spinlock.h"
-//#include "sleeplock.h"
-//#include "fs.h"
-//#include "file.h"
-#include "mmu.h"
-//#include "proc.h"
 #include "x86.h"
 
 #define COM1    0x3f8
@@ -40,7 +32,7 @@ uartinit(void)
   // enable interrupts.
   inb(COM1+2);
   inb(COM1+0);
-  ioapicenable(IRQ_COM1, 0);
+  //ioapicenable(IRQ_COM1, 0);
 }
 
 void

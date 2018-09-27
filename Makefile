@@ -1,6 +1,5 @@
 OBJS = \
 	console.o\
-	ioapic.o\
 	main.o\
 	string.o\
 	uart.o\
