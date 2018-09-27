@@ -4,12 +4,12 @@
 #include "defs.h"
 #include "param.h"
 #include "traps.h"
-#include "spinlock.h"
-#include "sleeplock.h"
-#include "fs.h"
-#include "file.h"
+//#include "spinlock.h"
+//#include "sleeplock.h"
+//#include "fs.h"
+//#include "file.h"
 #include "mmu.h"
-#include "proc.h"
+//#include "proc.h"
 #include "x86.h"
 
 #define COM1    0x3f8
@@ -19,7 +19,6 @@ static int uart;    // is there a uart?
 void
 uartinit(void)
 {
-  char *p;
 
   // Turn off the FIFO
   outb(COM1+2, 0);
@@ -42,10 +41,6 @@ uartinit(void)
   inb(COM1+2);
   inb(COM1+0);
   ioapicenable(IRQ_COM1, 0);
-
-  // Announce that we're here.
-  for(p="xv6...\r\n"; *p; p++)
-    uartputc(*p);
 }
 
 void

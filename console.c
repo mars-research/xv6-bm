@@ -6,13 +6,13 @@
 #include "defs.h"
 #include "param.h"
 #include "traps.h"
-#include "spinlock.h"
-#include "sleeplock.h"
-#include "fs.h"
-#include "file.h"
+//#include "spinlock.h"
+//#include "sleeplock.h"
+//#include "fs.h"
+//#include "file.h"
 #include "memlayout.h"
 #include "mmu.h"
-#include "proc.h"
+//#include "proc.h"
 #include "x86.h"
 
 static void consputc(int);
@@ -20,7 +20,7 @@ static void consputc(int);
 static int panicked = 0;
 
 static struct {
-  struct spinlock lock;
+//  struct spinlock lock;
   int locking;
 } cons;
 
@@ -54,13 +54,13 @@ printint(int xx, int base, int sign)
 void
 cprintf(char *fmt, ...)
 {
-  int i, c, locking;
+  int i, c;
   uint *argp;
   char *s;
 
-  locking = cons.locking;
-  if(locking)
-    acquire(&cons.lock);
+//  locking = cons.locking;
+//  if(locking)
+//    acquire(&cons.lock);
 
   if (fmt == 0)
     panic("null fmt");
@@ -99,8 +99,8 @@ cprintf(char *fmt, ...)
     }
   }
 
-  if(locking)
-    release(&cons.lock);
+//  if(locking)
+//    release(&cons.lock);
 }
 
 void
@@ -112,10 +112,10 @@ panic(char *s)
   cli();
   cons.locking = 0;
   // use lapiccpunum so that we can call panic from mycpu()
-  cprintf("lapicid %d: panic: ", lapicid());
+  //cprintf("lapicid %d: panic: ", lapicid());
   cprintf(s);
   cprintf("\n");
-  getcallerpcs(&s, pcs);
+  //getcallerpcs(&s, pcs);
   for(i=0; i<10; i++)
     cprintf(" %p", pcs[i]);
   panicked = 1; // freeze other CPU
@@ -190,17 +190,19 @@ struct {
 
 #define C(x)  ((x)-'@')  // Control-x
 
+void microdelay(int us) {
+
+};
+
 void
 consoleintr(int (*getc)(void))
 {
-  int c, doprocdump = 0;
+  int c;
 
-  acquire(&cons.lock);
+  //acquire(&cons.lock);
   while((c = getc()) >= 0){
     switch(c){
     case C('P'):  // Process listing.
-      // procdump() locks cons.lock indirectly; invoke later
-      doprocdump = 1;
       break;
     case C('U'):  // Kill line.
       while(input.e != input.w &&
@@ -222,16 +224,16 @@ consoleintr(int (*getc)(void))
         consputc(c);
         if(c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
           input.w = input.e;
-          wakeup(&input.r);
+          //wakeup(&input.r);
         }
       }
       break;
     }
   }
-  release(&cons.lock);
-  if(doprocdump) {
-    procdump();  // now call procdump() wo. cons.lock held
-  }
+  //release(&cons.lock);
+  //if(doprocdump) {
+  //  procdump();  // now call procdump() wo. cons.lock held
+  //}
 }
 
 int
@@ -240,17 +242,17 @@ consoleread(struct inode *ip, char *dst, int n)
   uint target;
   int c;
 
-  iunlock(ip);
+  //iunlock(ip);
   target = n;
-  acquire(&cons.lock);
+  //acquire(&cons.lock);
   while(n > 0){
     while(input.r == input.w){
-      if(myproc()->killed){
-        release(&cons.lock);
-        ilock(ip);
-        return -1;
-      }
-      sleep(&input.r, &cons.lock);
+      //if(myproc()->killed){
+        //release(&cons.lock);
+        //ilock(ip);
+       // return -1;
+      //}
+      //sleep(&input.r, &cons.lock);
     }
     c = input.buf[input.r++ % INPUT_BUF];
     if(c == C('D')){  // EOF
@@ -266,8 +268,8 @@ consoleread(struct inode *ip, char *dst, int n)
     if(c == '\n')
       break;
   }
-  release(&cons.lock);
-  ilock(ip);
+  //release(&cons.lock);
+  //ilock(ip);
 
   return target - n;
 }
@@ -277,12 +279,12 @@ consolewrite(struct inode *ip, char *buf, int n)
 {
   int i;
 
-  iunlock(ip);
-  acquire(&cons.lock);
+  //iunlock(ip);
+  //acquire(&cons.lock);
   for(i = 0; i < n; i++)
     consputc(buf[i] & 0xff);
-  release(&cons.lock);
-  ilock(ip);
+  //release(&cons.lock);
+  //ilock(ip);
 
   return n;
 }
@@ -290,12 +292,12 @@ consolewrite(struct inode *ip, char *buf, int n)
 void
 consoleinit(void)
 {
-  initlock(&cons.lock, "console");
+  //initlock(&cons.lock, "console");
 
-  devsw[CONSOLE].write = consolewrite;
-  devsw[CONSOLE].read = consoleread;
-  cons.locking = 1;
+  //devsw[CONSOLE].write = consolewrite;
+  //devsw[CONSOLE].read = consoleread;
+  //cons.locking = 1;
 
-  ioapicenable(IRQ_KBD, 0);
+  //ioapicenable(IRQ_KBD, 0);
 }
 
