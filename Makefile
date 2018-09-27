@@ -111,27 +111,25 @@ QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
 ifndef CPUS
 CPUS := 1
 endif
-dQEMUOPTS = -drive file=xv6.img,index=0,media=disk,format=raw -smp $(CPUS) -m 512 $(QEMUEXTRA)
+QEMUOPTS = -kernel kernelmemfs -smp $(CPUS) -m 512 $(QEMUEXTRA)
 
-qemu: xv6.img
-	$(QEMU) -serial mon:stdio $(QEMUOPTS)
+qemu: kernelmemfs
+	$(QEMU) -nographic $(QEMUOPTS)
 
-qemu-memfs: xv6memfs.img
-	$(QEMU) -drive file=xv6memfs.img,index=0,media=disk,format=raw -smp $(CPUS) -m 256
-
-qemu-nox: xv6.img
+qemu-nox: kernelmemfs
 	$(QEMU) -nographic $(QEMUOPTS)
 
 .gdbinit: .gdbinit.tmpl
 	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
 
-qemu-gdb: xv6.img .gdbinit
+qemu-gdb: kernelmemfs .gdbinit
 	@echo "*** Now run 'gdb'." 1>&2
 	$(QEMU) -serial mon:stdio $(QEMUOPTS) -S $(QEMUGDB)
 
-qemu-nox-gdb: xv6.img .gdbinit
+qemu-nox-gdb: kernelmemfs .gdbinit
 	@echo "*** Now run 'gdb'." 1>&2
 	$(QEMU) -nographic $(QEMUOPTS) -S $(QEMUGDB)
+
 
 # CUT HERE
 # prepare dist for students
