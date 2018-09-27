@@ -1,7 +1,55 @@
-Patches to let xv6 run on bare metal
+Patches to boot into "Hello world" on bare metal using bits of xv6
 
--- xv6 has most of bare metal support in place (I guess, it worked in the 
-   past but is currently broken, hence we fix it). 
+xv6 has most of bare metal support in place (I guess, it worked in the past but
+is currently broken, hence we fix it). This branch is a very stripped down
+version of the xv6 kernel that can be booted with Grub (or any other boot
+loader that supports multiboot specification). 
+
+The goal is to demonstrate a "minimal" infrastructure needed to print "Hello
+world!" on the bare metal machine. 
+
+At a hight level the kernel is compiled into a single file kernelmemfs, it then
+relies on te Grub to get loaded into memory. Grub passes control to the entry
+point of the entry.S that does minimal platform initialization and passes
+control to main() in main.c. main() initializes the console and the uart
+interface and prints "Hello world!". After that it speens forever doing
+nothing. 
+
+1) To make this code 
+
+   make
+
+2) Copy the kernel into the /boot folder
+
+   sudo cp kernelmemfs /boot/
+
+3) Add the following entry to the grub menu list. On a Linux machine this can
+be done by adding this to the /etc/grub.d/40_custom. You might adjust the
+root='hd0,2' to reflect where your Linux root is on disk, e.g., maybe it's on
+root='hd0,1'
+
+set timeout=30
+menuentry "xv6" {
+    insmod ext2
+    set root='hd0,2'
+    set kernel='/boot/kernelmemfs'
+    echo "Loading ${kernel}..."
+    multiboot ${kernel} ${kernel}
+    boot
+}
+
+4) Update grub
+
+  sudo sudo update-grub2
+
+5) Reboot and choose the xv6 entry. Make sure that you can see the grub menu
+list by editing /etc/default/grub making sure that GRUB_HIDDEN_TIMEOUT_QUIET is
+set to "false". 
+
+  GRUB_HIDDEN_TIMEOUT_QUIET=false
+
+
+----------------------------------------------------------------------
 
 xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
 Version 6 (v6).  xv6 loosely follows the structure and style of v6,
