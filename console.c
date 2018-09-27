@@ -5,8 +5,7 @@
 #include "types.h"
 #include "defs.h"
 #include "param.h"
-#include "traps.h"
-//#include "memlayout.h"
+#include "memlayout.h"
 #include "mmu.h"
 #include "x86.h"
 
