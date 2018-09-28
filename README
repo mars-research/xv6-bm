@@ -1,21 +1,30 @@
-Patches to boot into "Hello world" on bare metal using bits of xv6
+This is a small demo that takes parts of the xv6 kernel to demonstrate a simple
+boot into "Hello world" demo on real hardware.  The kernel can be booted with
+Grub (or any other boot loader that supports multiboot specification) and in
+Qemu. 
 
-xv6 has most of bare metal support in place (I guess, it worked in the past but
-is currently broken, hence we fix it). This branch is a very stripped down
-version of the xv6 kernel that can be booted with Grub (or any other boot
-loader that supports multiboot specification). 
 
-The goal is to demonstrate a "minimal" infrastructure needed to print "Hello
-world!" on the bare metal machine. 
+We made several patches to make sure that xv6 boots on our machines. xv6 has
+most of the bare metal support in place (I guess, it worked in the past but is
+currently broken, hence we fixed it). 
+
+Overview
+-----------------------------------------------------------------------------
 
 At a hight level the kernel is compiled into a single file kernelmemfs, it then
-relies on te Grub to get loaded into memory. Grub passes control to the entry
+relies on te Grub to get loaded into memory.  Grub passes control to the entry
 point of the entry.S that does minimal platform initialization and passes
-control to main() in main.c. main() initializes the console and the uart
+control to main() in main.c.  main() initializes the console and the uart
 interface and prints "Hello world!". After that it speens forever doing
 nothing. 
 
-1) To make this code 
+Run on bare metal
+-------------------------------------------------------------------------------
+
+Note: we tested on d820 machines in Emulab (they support serial line). CRG on a
+laptop didn't work (we would appreciate help!)
+
+1) Build the kernel
 
    make
 
@@ -48,7 +57,14 @@ set to "false".
 
   GRUB_HIDDEN_TIMEOUT_QUIET=false
 
+Run on Qemu
+-------------------------------------------------------------------------------
 
+1) You can run this "Hello world" demo in Qemu on your local machine
+
+    make qemu
+
+Original xv6 text
 ----------------------------------------------------------------------
 
 xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
