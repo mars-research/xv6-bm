@@ -38,6 +38,7 @@
 #define CR0_PG          0x80000000      // Paging
 
 #define CR4_PSE         0x00000010      // Page size extension
+#define CR4_PGE         0x00000080      // Page global enable
 
 // various segment selectors.
 #define SEG_KCODE 1  // kernel code
@@ -141,6 +142,7 @@ struct segdesc {
 #define PTE_D           0x040   // Dirty
 #define PTE_PS          0x080   // Page Size
 #define PTE_MBZ         0x180   // Bits must be zero
+#define PTE_G           0x100   // Global page
 
 // Address in page table or page directory entry
 #define PTE_ADDR(pte)   ((uint)(pte) & ~0xFFF)

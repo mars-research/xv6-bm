@@ -46,7 +46,7 @@ _start = entry
 entry:
   # Turn on page size extension for 4Mbyte pages
   movl    %cr4, %eax
-  orl     $(CR4_PSE), %eax
+  orl     $(CR4_PSE|CR4_PGE), %eax
   movl    %eax, %cr4
   # Set page directory
   movl    $(V2P_WO(entrypgdir)), %eax
