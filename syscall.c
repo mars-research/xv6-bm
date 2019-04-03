@@ -113,6 +113,7 @@ extern int sys_oops(void);
 extern int sys_send_recv_dummy(void);
 extern int sys_cr3_reload(void);
 extern int sys_test_size(void);
+extern int sys_touch_pages(void);
 
 int (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -147,7 +148,7 @@ int (*syscalls[])(void) = {
 [SYS_send_recv_dummy] sys_send_recv_dummy,
 [SYS_cr3_reload]      sys_cr3_reload,
 [SYS_test_size]       sys_test_size,
-
+[SYS_touch_pages]     sys_touch_pages,
 
 };
 

@@ -767,6 +767,7 @@ sys_cr3_reload(void)
   return 1;
 }
 
+
 int
 sys_send_recv_dummy(void)
 {
@@ -845,11 +846,38 @@ int sysenter_dispatch_test( uint stack, uint num) {
   for (i = 0; i < test_size; i++) {
      sum += *(int *)a; 
      a += PGSIZE; 
-  }    
+  }
+#if 0 //enable if testing touch_pages
+  lcr3(V2P(p->pgdir));
+#endif 
+
   return 0;
 }
 
-int inline 
+int
+sys_touch_pages(void)
+{
+  cprintf("touching pages\n");
+  //struct proc *p;
+  //struct cpu  *c;
+  char *a = (char *)KERNLINK;
+  int i;  
+ 
+  //c = &cpus[0];
+  //p = c->proc;
+
+  //lcr3(V2P(p->pgdir));
+
+  for (i = 0; i < test_size; i++) {
+     sum += *(int *)a; 
+     a += PGSIZE; 
+  }
+
+  return 1;
+}
+
+
+int //inline 
 sys_send_recv(void)
 {
   //int endp = 0;

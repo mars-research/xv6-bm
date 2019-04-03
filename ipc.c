@@ -80,11 +80,26 @@ void test_cr3_reload() {
 
   end = rdtsc();
         
-  printf(1, "overhead of cs3_reload average cycles %d across runs: %d\n",
+  printf(1, "overhead of cr3_reload across %d runs: average cycles %d\n",
         ITERS, (unsigned long)(end - start)/ITERS);
   return;
 }
 
+void test_touch_pages(){
+  unsigned long i;
+  unsigned long long start, end;
+  
+  start = rdtsc();
+  for(i = 0; i < ITERS; i++){
+    touch_pages();
+  }
+  end = rdtsc();
+
+  printf(1, "overhead of touch_pages across %d runs: average cycles %d\n",
+        ITERS, (unsigned long)(end - start)/ITERS);
+
+  return;
+}
 
 void test_send_recv_dummy() {
   unsigned long i; 
@@ -154,19 +169,21 @@ void server(void){
 int
 main(void)
 {
-//  int i; 
+  int i; 
   int pid;
   printf(1, "ipc: starting test\n");
 
   //test_int_null();
-  //test_sysenter_null();
+  test_sysenter_null();
   //test_pgdir();
   
-//  for (i = 0; i < 128; i++) {
-//    test_size(i);
-//    printf(1, "touch %d pages:", i);
-//    test_cr3_reload();
-//  }
+  for (i = 0; i < 128; i++) {
+    test_size(i);
+    printf(1, "touch %d pages:", i);
+    //test_touch_pages();
+    test_cr3_reload();
+  }
+
 
   //test_send_recv_dummy();
  

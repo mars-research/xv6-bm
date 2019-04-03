@@ -198,5 +198,5 @@ void            dump_pgdir(pde_t *pgdir, uint from, uint to);
 
 
 // number of elements in fixed-size array
-extern int (*syscalls[32])(void);
+extern int (*syscalls[33])(void);
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

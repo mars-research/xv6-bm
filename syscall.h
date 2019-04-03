@@ -30,3 +30,4 @@
 #define SYS_send_recv_dummy 29
 #define SYS_cr3_reload      30
 #define SYS_test_size       31
+#define SYS_touch_pages     32
