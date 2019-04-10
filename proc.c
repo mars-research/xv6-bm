@@ -857,21 +857,42 @@ int sysenter_dispatch_test( uint stack, uint num) {
 int
 sys_touch_pages(void)
 {
-  cprintf("touching pages\n");
-  //struct proc *p;
-  //struct cpu  *c;
-  char *a = (char *)KERNLINK;
-  int i;  
- 
-  //c = &cpus[0];
-  //p = c->proc;
+  struct proc *p;
+  struct cpu  *c;
+  //char *a = (char *)KERNLINK;
+  unsigned long long start, end, total;
+
+  c = &cpus[0];
+  p = c->proc;
 
   //lcr3(V2P(p->pgdir));
 
-  for (i = 0; i < test_size; i++) {
+ /* for (i = 0; i < test_size; i++) {
      sum += *(int *)a; 
      a += PGSIZE; 
-  }
+  }*/
+
+ for(int num_pages = 0; num_pages < 128; num_pages++){
+    cprintf("touch %d pages:", num_pages);
+    total = 0;
+    for(unsigned long long i = 0; i < ITERS; i++){
+      sum = 0;
+      char *a = (char *)KERNLINK;
+
+      lcr3(V2P(p->pgdir));
+
+      start = rdtsc();
+      for(unsigned long long j = 0; j < num_pages; j++){
+        sum += *(int *)a;
+        a += PGSIZE;
+      }
+      end = rdtsc();
+      total += end - start;
+
+    }
+    cprintf("overhead of touch_pages across %d runs: average cycles %d\n",
+          ITERS, (unsigned long)(total)/ITERS);
+  }  
 
   return 1;
 }

@@ -169,20 +169,22 @@ void server(void){
 int
 main(void)
 {
-  int i; 
+  //int i; 
   int pid;
   printf(1, "ipc: starting test\n");
 
   //test_int_null();
-  test_sysenter_null();
+  //test_sysenter_null();
   //test_pgdir();
   
-  for (i = 0; i < 128; i++) {
+  /*for (i = 0; i < 128; i++) {
     test_size(i);
     printf(1, "touch %d pages:", i);
     //test_touch_pages();
     test_cr3_reload();
-  }
+  }*/
+
+  touch_pages();
 
 
   //test_send_recv_dummy();
