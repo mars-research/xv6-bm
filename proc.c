@@ -757,13 +757,33 @@ sys_cr3_reload(void)
 {
   struct proc *p;
   struct cpu  *c;
+  unsigned long long start, end, total;
 
   c = &cpus[0];
   p = c->proc;
-
   lcr3(V2P(p->pgdir));
-  //lcr3(V2P(p->pgdir));
 
+  for(int num_pages = 0; num_pages < 128; num_pages++){
+    cprintf("touch %d pages:", num_pages);
+    total = 0;
+    for(unsigned long long i = 0; i < ITERS; i++){
+      int sum = 0;
+      char *a = (char *)KERNLINK;
+      
+      for(unsigned long long j = 0; j < num_pages; j++){
+        sum += *(int *)a;
+        a += PGSIZE;
+      }
+
+      start = rdtsc();
+      lcr3(V2P(p->pgdir));
+      end = rdtsc();
+
+      total += end - start;
+    }
+    cprintf("overhead of cr3_reload across %d runs: average cycles %d\n",
+          ITERS, (unsigned long)(total)/ITERS);
+  }
   return 1;
 }
 
@@ -847,9 +867,6 @@ int sysenter_dispatch_test( uint stack, uint num) {
      sum += *(int *)a; 
      a += PGSIZE; 
   }
-#if 0 //enable if testing touch_pages
-  lcr3(V2P(p->pgdir));
-#endif 
 
   return 0;
 }

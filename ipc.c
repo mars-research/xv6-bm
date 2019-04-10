@@ -171,10 +171,11 @@ main(void)
 {
   //int i; 
   int pid;
+  struct msg m __attribute__ ((aligned (64)));
   printf(1, "ipc: starting test\n");
 
   //test_int_null();
-  //test_sysenter_null();
+  test_sysenter_null();
   //test_pgdir();
   
   /*for (i = 0; i < 128; i++) {
@@ -185,7 +186,7 @@ main(void)
   }*/
 
   touch_pages();
-
+  cr3_reload(0, &m);
 
   //test_send_recv_dummy();
  
