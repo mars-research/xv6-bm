@@ -14,6 +14,8 @@ extern uint vectors[];  // in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
 uint ticks;
 
+void dump_state(struct trapframe *tf);
+
 void
 tvinit(void)
 {
@@ -31,6 +33,79 @@ idtinit(void)
 {
   lidt(idt, sizeof(idt));
 }
+
+void _dump_stack(unsigned int stack) {
+  /* Assume that entire stack page is mapped */
+  unsigned int roundup = PGROUNDUP(stack) - sizeof(void *); 
+  unsigned int counter = 0; 
+
+  cprintf("stack starting at:%x\n", stack); 
+
+  /* Dump as words (4 bytes) in groups of 16 */
+  cprintf("%x:", stack); 
+  while (stack < roundup) {
+    cprintf("%x ", *(unsigned int *)stack); 
+    stack += sizeof(void *); 
+    if (counter == 15) {
+      counter = 0;
+      cprintf("\n");
+      cprintf("%x:", stack);
+    }
+    counter ++; 
+  }
+
+  cprintf(" ");
+
+  /* If any bytes left 1-4 dump them as bytes */
+  while (stack < roundup) {
+    cprintf("%c ", *(char*)stack); 
+    stack ++; 
+  }
+
+  cprintf("\n");
+
+}
+
+void dump_stack(char *s) {
+  _dump_stack((unsigned int)&s);
+}
+
+void dump_state(struct trapframe *tf) {
+  cprintf("eax: %x, ebx: %x, ecx: %x, edx: %x\n",
+          tf->eax, tf->ebx, tf->ecx, tf->edx);
+  cprintf("esp: %x, ebp: %x, esi: %x, edi: %x\n",
+          tf->esp, tf->ebp, tf->esi, tf->edi);
+  cprintf("gs: %x, fs: %x, es: %x, ds: %x, ss: %x\n",
+          tf->gs, tf->fs, tf->es, tf->ds, tf->ss);
+  cprintf("err: %x, eip: %x, cs: %x, esp: %x, eflags: %x\n",
+          tf->err, tf->eip, tf->cs, tf->esp, tf->eflags);
+
+  if (mycpu()->proc)
+    cprintf("current process, id: %d, name:%s\n", 
+          mycpu()->proc->pid, mycpu()->proc->name);
+  else 
+    cprintf("current process is NULL\n"); 
+
+  if (mycpu()->proc && mycpu()->proc->tf != tf)
+    dump(); 
+
+  /* Inside the trap function, tf is on top of the stack */
+  _dump_stack((unsigned int)tf);
+  return;
+};
+
+void dump() {
+  if (!mycpu()->proc) {
+     cprintf("current process is NULL\n");
+     return;
+  }
+
+  cprintf("state of the current process, id: %d, name:%s\n", 
+          mycpu()->proc->pid, mycpu()->proc->name);
+
+  dump_state(mycpu()->proc->tf); 
+  return;
+};
 
 //PAGEBREAK: 41
 void
@@ -84,6 +159,7 @@ trap(struct trapframe *tf)
       // In kernel, it must be our mistake.
       cprintf("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
               tf->trapno, cpuid(), tf->eip, rcr2());
+      dump_state(tf);
       panic("trap");
     }
     // In user space, assume process misbehaved.
