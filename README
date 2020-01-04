@@ -3,6 +3,47 @@ Patches to let xv6 run on bare metal
 -- xv6 has most of bare metal support in place (I guess, it worked in the 
    past but is currently broken, hence we fix it). 
 
+Run on bare metal
+-------------------------------------------------------------------------------
+
+Note: we tested on d820 machines in Emulab (they support serial line). CRG on a
+laptop didn't work (we would appreciate help!)
+
+1) Build the kernel
+
+   make kernelmemfs
+
+2) Copy the kernel into the /boot folder
+
+   sudo cp kernelmemfs /boot/
+
+3) Add the following entry to the grub menu list. On a Linux machine this can
+be done by adding this to the /etc/grub.d/40_custom. You might adjust the
+root='hd0,2' to reflect where your Linux root is on disk, e.g., for example the 
+first partition of the first disk, i.e., /dev/sda1 is root='hd0,1'
+
+set timeout=30
+menuentry "xv6" {
+    insmod ext2
+    set root='hd0,2'
+    set kernel='/boot/kernelmemfs'
+    echo "Loading ${kernel}..."
+    multiboot ${kernel} ${kernel}
+    boot
+}
+
+4) Update grub
+
+  sudo update-grub2
+
+5) Reboot and choose the xv6 entry. Make sure that you can see the grub menu
+list by editing /etc/default/grub making sure that GRUB_HIDDEN_TIMEOUT_QUIET is
+set to "false". 
+
+  GRUB_HIDDEN_TIMEOUT_QUIET=false
+
+---------------------------------------------------------------------------------
+
 xv6 is a re-implementation of Dennis Ritchie's and Ken Thompson's Unix
 Version 6 (v6).  xv6 loosely follows the structure and style of v6,
 but is implemented for a modern x86-based multiprocessor using ANSI C.
